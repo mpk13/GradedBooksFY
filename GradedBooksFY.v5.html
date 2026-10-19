@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Graded Reader">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fbfaf7">
+<title>Graded Reader — leitor de inglês por nível</title>
+<style>
+:root{
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --rd-size:19px;--rd-lh:1.6;--rd-font:var(--serif);
+}
+body[data-theme=light]{--bg:#fbfaf7;--bg2:#ffffff;--fg:#1f1e1b;--muted:#7a756c;--line:#e7e2d9;--accent:#2f6f62;--accent-fg:#fff;--hl:rgba(255,205,80,.42);--hlw:rgba(255,160,0,.55);--shadow:0 8px 30px rgba(0,0,0,.12)}
+body[data-theme=sepia]{--bg:#f4ecd8;--bg2:#faf4e4;--fg:#3b2f22;--muted:#8b7a62;--line:#e0d3b6;--accent:#8a5a2b;--accent-fg:#fff;--hl:rgba(214,150,40,.28);--hlw:rgba(200,120,20,.5);--shadow:0 8px 30px rgba(60,40,10,.15)}
+body[data-theme=dark]{--bg:#121212;--bg2:#1c1c1c;--fg:#d9d5cd;--muted:#8d887f;--line:#2d2d2d;--accent:#7fb8a8;--accent-fg:#0d1d19;--hl:rgba(110,150,255,.22);--hlw:rgba(110,150,255,.55);--shadow:0 8px 30px rgba(0,0,0,.55)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--sans);transition:background .2s,color .2s}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:disabled{opacity:.45;cursor:default}
+svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.view{display:none;position:fixed;inset:0}
+.view.active{display:block}
+#library,#vocab{overflow-y:auto}
+.muted{color:var(--muted)} .sm{font-size:12.5px}
+.fine{font-size:12.5px;color:var(--muted);line-height:1.45;margin:8px 0}
+.wide{width:100%;margin-top:10px}
+.link{color:var(--accent);font-weight:600;font-size:13.5px;padding:6px 0}
+.link.danger{color:#b4473b;margin-top:14px}
+.warnbox{border:1px solid #e0b98a;background:rgba(224,160,80,.12);color:var(--fg);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45;margin:0 0 16px}
+.okline{font-size:12.5px;color:var(--accent);font-weight:600}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;margin-top:10px;line-height:1.4}
+
+/* ---------- Biblioteca ---------- */
+.lib{max-width:980px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 18px 60px}
+.lib-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lib-head h1{font-family:var(--serif);font-weight:600;font-size:28px;margin:6px 0}
+.sub{color:var(--muted);font-size:14px;margin:2px 0 12px;line-height:1.45}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:inline-grid;place-items:center;position:relative}
+.icon-btn:hover{background:var(--line)}
+.icon-btn .dot{position:absolute;top:6px;right:5px;font-size:10px;background:var(--accent);color:var(--accent-fg);border-radius:8px;padding:0 4px;font-weight:700}
+.chips{display:flex;gap:8px;margin:10px 0 20px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);font-size:14px;font-weight:500;cursor:pointer}
+.btn svg.i{width:18px;height:18px}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.on{background:var(--fg);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:24px 16px}
+.card{text-align:left;display:block}
+.cover{aspect-ratio:2/3;border-radius:3px 7px 7px 3px;background:var(--c);color:#fff;padding:16px 12px 12px 20px;display:flex;flex-direction:column;justify-content:space-between;position:relative;box-shadow:0 2px 5px rgba(0,0,0,.18),0 12px 26px rgba(0,0,0,.10);overflow:hidden}
+.cover::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:linear-gradient(90deg,rgba(0,0,0,.3),rgba(255,255,255,.1))}
+.cover::after{content:"";position:absolute;left:20px;right:12px;top:58%;border-top:1px solid rgba(255,255,255,.35)}
+.cover .ct{font-family:var(--serif);font-size:17px;line-height:1.2;font-weight:600;word-break:break-word}
+.cover .ca{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.85}
+.cover.sm{width:72px;flex:none;padding:10px 6px 8px 12px}
+.cover.sm .ct{font-size:10.5px}.cover.sm::after{display:none}.cover.sm::before{width:5px}
+.card .meta{font-size:12px;color:var(--muted);margin-top:9px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.badge{font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:4px;border:1px solid var(--line);color:var(--fg)}
+.badge.ok{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.thin{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:6px}
+.thin i{display:block;height:100%;background:var(--accent)}
+.qbar{position:sticky;bottom:12px;margin-top:24px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow);font-size:13px;display:flex;gap:10px;align-items:center}
+.qbar .bar{flex:1}
+
+/* ---------- Sheets ---------- */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+.backdrop.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:88vh;overflow-y:auto;background:var(--bg2);border-radius:18px 18px 0 0;padding:8px 20px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s ease;z-index:51;box-shadow:var(--shadow);max-width:640px;margin:0 auto}
+.sheet.on{transform:none}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 12px}
+.sheet h3{font-family:var(--serif);font-size:21px;margin:4px 0 6px;font-weight:600}
+.sec{margin:18px 0}
+.lbl{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;padding:9px 4px;font-size:14px;border-left:1px solid var(--line);line-height:1.15}
+.seg button:first-child{border-left:0}
+.seg button.on{background:var(--fg);color:var(--bg)}
+.seg button.na{color:var(--muted)}
+.seg small{display:block;font-size:10px;opacity:.75}
+.range-row{display:flex;align-items:center;gap:12px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=checkbox]{accent-color:var(--accent);width:17px;height:17px;flex:none}
+input[type=text],input[type=password],textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:16px}
+textarea{min-height:190px;resize:vertical;font-family:var(--serif);line-height:1.5}
+.bs-head{display:flex;gap:14px;align-items:flex-start}
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lvl{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left}
+.lvl.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.lvl b{font-size:18px}.lvl span{font-size:12px;color:var(--muted);margin-left:4px}
+.lvl p{margin:4px 0 0;font-size:12.5px;line-height:1.35}
+.lvl .st{font-size:11.5px;color:var(--accent);margin-top:6px;font-weight:700}
+.genbox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
+.row.gap{justify-content:flex-start;flex-wrap:wrap;margin-top:10px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.note{font-size:12px;color:var(--muted);min-height:1em}
+.note.warn{color:#b4733b;margin-top:8px}
+.chq{font-size:13px;color:var(--muted);white-space:nowrap}
+.chq .link{padding:2px 0}
+.chlist{max-height:250px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin-top:6px}
+.chrow{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.chrow:last-child{border-bottom:0}
+.chrow .ct{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chrow .cw{font-size:11.5px;color:var(--muted);white-space:nowrap;display:flex;gap:6px;align-items:center}
+.est{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-top:10px;font-size:13.5px;line-height:1.5}
+.est .em{font-size:14.5px}
+.est .ec{margin-top:3px}
+.est .ec b{font-size:16px;color:var(--accent)}
+.toc-it{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:12px 4px;border-bottom:1px solid var(--line);font-size:15px}
+.toc-it.on{color:var(--accent);font-weight:700}
+.toc-it small{color:var(--muted);white-space:nowrap;font-weight:400}
+.bm-it{display:flex;gap:8px;align-items:flex-start;border-bottom:1px solid var(--line)}
+.bm-it>button:first-child{flex:1;text-align:left;padding:12px 0}
+.bm-it .sn{font-family:var(--serif);font-size:14px;color:var(--muted);display:block;margin-top:3px}
+.empty{color:var(--muted);text-align:center;padding:30px 10px;font-size:14px}
+.ww-demo{font-family:var(--serif);font-size:17px;line-height:2.4;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px 12px;margin-top:10px}
+
+/* ---------- Palavra ---------- */
+.wd-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.wd-word{font-family:var(--serif);font-size:30px;font-weight:600}
+.wd-pos{color:var(--muted);font-style:italic}
+.wd-pt{font-size:19px;color:var(--accent);font-weight:700;margin:6px 0 10px}
+.wd-def{font-size:16px;line-height:1.45}
+.wd-ex{font-family:var(--serif);font-size:15px;margin-top:8px}
+.wd-ctx{font-family:var(--serif);color:var(--muted);border-left:3px solid var(--line);padding-left:10px;margin:14px 0;font-size:14.5px;line-height:1.5}
+.skel{height:14px;border-radius:6px;background:var(--line);margin:10px 0;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.tapmark{position:fixed;background:var(--hlw);opacity:.6;border-radius:3px;pointer-events:none;z-index:45}
+
+/* ---------- Leitor ---------- */
+#reader{background:var(--bg);overflow:hidden}
+#rv-vp{position:absolute;top:calc(30px + env(safe-area-inset-top));bottom:calc(34px + env(safe-area-inset-bottom));left:0;right:0;margin:0 auto;max-width:760px;overflow:hidden}
+#rv-vp.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch}
+#rv-ct{font-family:var(--rd-font);font-size:var(--rd-size);line-height:var(--rd-lh);color:var(--fg);hyphens:auto;-webkit-hyphens:auto;text-align:justify;overflow-wrap:break-word}
+#rv-ct.ww{line-height:calc(var(--rd-lh) * 1em + .55em)}
+#rv-vp.paged #rv-ct{position:absolute;top:0;column-fill:auto;transition:transform .2s ease}
+#rv-vp.paged #rv-ct.noanim{transition:none}
+#rv-vp.scroll #rv-ct{padding-bottom:30vh}
+#rv-ct p{margin:0;text-indent:1.3em;orphans:2;widows:2}
+#rv-ct .ch-title+p,#rv-ct .pend-note+p{text-indent:0}
+.ch-title{font-size:1.3em;font-weight:600;text-align:center;margin:.8em 0 1.4em;line-height:1.25;text-indent:0;break-after:avoid;hyphens:none}
+#rv-ct p.pend{color:var(--muted)}
+.pend-note{font-family:var(--sans);font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:8px 10px;margin:0 0 1em;text-align:left;line-height:1.4;break-inside:avoid}
+.pend-note .btn{margin-top:8px}
+/* Word Wise: dica acima da palavra difícil */
+ruby{ruby-position:over;ruby-align:center}
+rt{font-family:var(--sans);font-size:.5em;line-height:1.15;color:var(--accent);font-weight:500;letter-spacing:0;text-indent:0;white-space:nowrap;hyphens:none;cursor:pointer}
+.s.reading{background:var(--hl);border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+mark.w{background:var(--hlw);color:inherit;border-radius:3px}
+::highlight(tts-word){background-color:var(--hlw)}
+.end{height:1px}
+.next-ch{display:flex;margin:2.5em auto 0;font-family:var(--sans)}
+#rv-status{position:absolute;left:0;right:0;bottom:0;height:calc(34px + env(safe-area-inset-bottom));padding:0 20px env(safe-area-inset-bottom);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);max-width:760px;margin:0 auto;gap:12px;cursor:pointer}
+#rv-status span:first-child{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#rv-status span:last-child{white-space:nowrap}
+.ribbon{position:absolute;top:0;right:max(22px,calc(50% - 358px));width:14px;height:30px;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 74%,0 100%);display:none;z-index:5}
+.ribbon.on{display:block}
+.menu-top{position:absolute;top:0;left:0;right:0;padding:env(safe-area-inset-top) 6px 0;height:calc(54px + env(safe-area-inset-top));display:flex;align-items:center;gap:2px;background:var(--bg2);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .2s;z-index:10}
+.menu-bot{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--line);padding:12px 16px calc(14px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .2s;z-index:10}
+.menu-bot>*{max-width:600px;margin-left:auto;margin-right:auto}
+#reader.menus .menu-top,#reader.menus .menu-bot{transform:none}
+.mt-title{flex:1;min-width:0;text-align:center;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aa{font-family:var(--serif);font-size:19px;font-weight:600}
+.ww-btn{font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.02em}
+.ww-btn.on{background:var(--accent);color:var(--accent-fg)}
+.gen-line{font-size:12px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:10px}
+.gen-line:empty{display:none}
+.gen-line .bar{flex:1;margin:0}
+.mb-info{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin:12px auto 6px;gap:10px}
+.mb-info span:first-child{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mb-info span:last-child{white-space:nowrap}
+.audio-row{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px}
+.play{width:54px;height:54px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;margin:0 6px}
+.play svg.i{width:24px;height:24px}
+.rate-btn{font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:6px 10px;margin-left:8px;min-width:54px}
+.mini{position:absolute;left:50%;bottom:calc(40px + env(safe-area-inset-bottom));transform:translateX(-50%);display:none;align-items:center;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:4px 8px;box-shadow:var(--shadow);z-index:9}
+.mini .play{width:38px;height:38px;margin:0 2px}.mini .play svg.i{width:18px;height:18px}
+.mini .icon-btn{width:36px;height:36px}
+.mini .rate-btn{margin-left:2px;border:0}
+#reader.playing:not(.menus) .mini{display:flex}
+
+/* ---------- Vocabulário ---------- */
+.vlist{margin-top:10px}
+.vitem{border-bottom:1px solid var(--line);padding:14px 0;display:grid;grid-template-columns:1fr auto;gap:3px 10px}
+.vitem .w{font-family:var(--serif);font-size:20px;font-weight:600}
+.vitem .w small{font-family:var(--sans);font-size:12px;color:var(--muted);font-style:italic;font-weight:400;margin-left:6px}
+.vitem .pt{color:var(--accent);font-weight:700}
+.vitem .def{font-size:14px;line-height:1.4}
+.vitem .ctx{font-family:var(--serif);font-size:14px;color:var(--muted);line-height:1.45;margin-top:4px}
+.vitem .ctx b{color:var(--fg)}
+.vitem .src{font-size:11px;color:var(--muted)}
+.vitem .acts{grid-row:1/span 4;grid-column:2;display:flex;flex-direction:column}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:100;max-width:90vw;text-align:center;line-height:1.4}
+.toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body data-theme="light">
+
+<section id="library" class="view active"></section>
+<section id="vocab" class="view"></section>
+
+<section id="reader" class="view">
+  <div id="rv-vp"><div id="rv-ct" lang="en"></div></div>
+  <div class="ribbon" id="rv-ribbon"></div>
+  <div id="rv-status" data-act="menus"><span id="st-ch"></span><span id="st-pg"></span></div>
+
+  <div class="mini">
+    <button class="play" data-act="play" aria-label="Play/Pause"></button>
+    <button class="icon-btn" data-act="snext" aria-label="Próxima frase"></button>
+    <button class="rate-btn rate-lbl" data-act="audio"></button>
+  </div>
+
+  <div class="menu-top">
+    <button class="icon-btn" data-act="back" aria-label="Biblioteca" data-ic="back"></button>
+    <div class="mt-title" id="mt-title"></div>
+    <button class="icon-btn ww-btn" data-act="ww-toggle" aria-label="Dicas de palavras" title="Dicas de palavras (Word Wise)">Aᵇᶜ</button>
+    <button class="icon-btn" data-act="toc" aria-label="Sumário" data-ic="list"></button>
+    <button class="icon-btn" data-act="bm" aria-label="Marcador" data-ic="bookmark"></button>
+    <button class="icon-btn" data-act="vocab" aria-label="Vocabulário" data-ic="vocab"></button>
+    <button class="icon-btn aa" data-act="aa" aria-label="Aparência">Aa</button>
+  </div>
+
+  <div class="menu-bot">
+    <div id="rv-vers"></div>
+    <div class="gen-line" id="rv-gen"></div>
+    <div class="mb-info"><span id="mb-ch"></span><span id="mb-pg"></span></div>
+    <div class="audio-row">
+      <button class="icon-btn" data-act="pprev" aria-label="Parágrafo anterior" data-ic="pprev"></button>
+      <button class="icon-btn" data-act="sprev" aria-label="Frase anterior" data-ic="sprev"></button>
+      <button class="play" data-act="play" aria-label="Play/Pause"></button>
+      <button class="icon-btn" data-act="snext" aria-label="Próxima frase" data-ic="snext"></button>
+      <button class="icon-btn" data-act="pnext" aria-label="Próximo parágrafo" data-ic="pnext"></button>
+      <button class="rate-btn rate-lbl" data-act="audio" aria-label="Voz e velocidade"></button>
+    </div>
+  </div>
+</section>
+
+<div class="backdrop" id="backdrop" data-act="close"></div>
+<div class="sheet" id="sheet" role="dialog"><div class="grab"></div><div id="sheet-body"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Utilidades
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const wc = s => (String(s).match(/\S+/g) || []).length;
+const fmtN = n => (n || 0).toLocaleString('pt-BR');
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const sleep = (ms, signal) => new Promise((res, rej) => {
+  const t = setTimeout(res, ms);
+  signal?.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Aborted', 'AbortError')); }, { once: true });
+});
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const usd = v => (v > 0 && v < 0.01) ? '< US$ 0,01' : (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+let toastT;
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+const ICONS = {
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+  bookmark: '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
+  vocab: '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+  play: '<path d="M7 4.5l12.5 7.5L7 19.5z" fill="currentColor" stroke="none"/>',
+  pause: '<path d="M6.5 4.5h3.8v15H6.5zM13.7 4.5h3.8v15h-3.8z" fill="currentColor" stroke="none"/>',
+  sprev: '<path d="M11 18l-6-6 6-6M19 18l-6-6 6-6"/>',
+  snext: '<path d="M13 6l6 6-6 6M5 6l6 6-6 6"/>',
+  pprev: '<path d="M19 19L9 12l10-7zM5 19V5"/>',
+  pnext: '<path d="M5 5l10 7-10 7zM19 5v14"/>',
+  gear: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+  clip: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
+  trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  vol: '<path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>',
+};
+const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+
+/* =====================================================================
+   Armazenamento permanente
+   Ordem de preferência: window.storage (se o ambiente oferecer) → IndexedDB
+   do navegador (fica salvo ao fechar o app) → memória (último recurso).
+   Não usa localStorage. Gravação imediata após cada bloco adaptado.
+   ===================================================================== */
+const IDB = {
+  p: null,
+  open() {
+    if (this.p) return this.p;
+    this.p = new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('IndexedDB indisponível'));
+      const r = indexedDB.open('graded-reader', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return this.p;
+  },
+  async tx(mode, fn) {
+    const db = await this.open();
+    return new Promise((res, rej) => {
+      const t = db.transaction('kv', mode), req = fn(t.objectStore('kv'));
+      t.oncomplete = () => res(req ? req.result : undefined);
+      t.onerror = t.onabort = () => rej(t.error || new Error('falha no IndexedDB'));
+    });
+  },
+  get(k) { return this.tx('readonly', s => s.get(k)); },
+  set(k, v) { return this.tx('readwrite', s => s.put(v, k)); },
+  del(k) { return this.tx('readwrite', s => s.delete(k)); },
+  keys() { return this.tx('readonly', s => s.getAllKeys()); },
+};
+const Store = {
+  mem: new Map(), _t: {}, warned: false, backend: 'mem', persisted: false,
+  async init() {
+    if (window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function') { this.backend = 'ws'; return; }
+    try { await IDB.open(); this.backend = 'idb'; } catch (e) { console.warn(e); this.backend = 'mem'; }
+    try { if (navigator.storage?.persist) this.persisted = await navigator.storage.persist(); } catch (e) {}
+  },
+  has() { return this.backend !== 'mem'; },
+  async get(k) {
+    if (this.mem.has(k)) return this.mem.get(k);
+    let v = null;
+    try {
+      if (this.backend === 'idb') { const r = await IDB.get(k); v = r === undefined ? null : r; }
+      else if (this.backend === 'ws') { const r = await window.storage.get(k); if (r && r.value != null) v = JSON.parse(r.value); }
+    } catch (e) { /* chave inexistente */ }
+    if (v != null) this.mem.set(k, v);
+    return v;
+  },
+  async write(k, v) {
+    try {
+      if (this.backend === 'idb') await IDB.set(k, v);
+      else if (this.backend === 'ws') await window.storage.set(k, JSON.stringify(v));
+    } catch (e) {
+      console.warn('storage', e);
+      if (!this.warned) { this.warned = true; toast('Não foi possível gravar no aparelho (espaço cheio?). Exporte um backup em ⚙.', 6000); }
+    }
+  },
+  async set(k, v) { this.mem.set(k, v); clearTimeout(this._t[k]); delete this._t[k]; await this.write(k, v); },
+  setLazy(k, v, ms = 800) { this.mem.set(k, v); clearTimeout(this._t[k]); this._t[k] = setTimeout(() => { delete this._t[k]; this.write(k, v); }, ms); },
+  flush() { for (const k of Object.keys(this._t)) { clearTimeout(this._t[k]); delete this._t[k]; this.write(k, this.mem.get(k)); } },
+  async del(k) {
+    this.mem.delete(k); clearTimeout(this._t[k]); delete this._t[k];
+    try { if (this.backend === 'idb') await IDB.del(k); else if (this.backend === 'ws') await window.storage.delete(k); } catch (e) {}
+  },
+  async keys() {
+    const ks = new Set(this.mem.keys());
+    try { if (this.backend === 'idb') (await IDB.keys()).forEach(k => ks.add(String(k))); } catch (e) {}
+    return [...ks];
+  },
+};
+
+/* =====================================================================
+   Estado
+   ===================================================================== */
+const DEFAULTS = { theme: 'light', font: 'serif', size: 19, lh: 1.6, margin: 'm', mode: 'paged', rate: 0.9, voice: '', level: 'A2',
+  apiKey: '', rememberKey: 0, endpoint: 'https://api.anthropic.com/v1/messages', model: 'claude-sonnet-5-5', hinted: false,
+  ww: 0, wwDensity: 'mid', wwLang: 'en', glossModel: 'claude-haiku-4-5', lastBackup: 0 };
+const S = { settings: { ...DEFAULTS }, library: [], books: {}, adapt: {}, gloss: {}, vocab: [], progress: {}, bookmarks: {}, dict: {}, wwUsage: { cost: 0 }, ui: { view: 'library', sel: {} } };
+const R = { book: null, meta: null, version: 'orig', adapt: null, ch: 0, page: 0, pages: 1, W: 0, paras: [], sent: [], cw: [], cum: [], dirty: false };
+const MARGINS = { s: 16, m: 28, l: 46 };
+const LV = ['A1', 'A2', 'B1', 'B2'];
+const PALETTE = ['#2f4858', '#7a3e48', '#33658a', '#55613d', '#8c5a2b', '#4b3f72', '#1f6f68', '#9b4a3c', '#3d5a80', '#6b4f3a', '#5c4d7d', '#2e5e4e'];
+const colorFor = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return PALETTE[h % PALETTE.length]; };
+const metaOf = id => S.library.find(m => m.id === id);
+
+function saveSettings() { const { apiKey, ...persist } = S.settings; Store.setLazy('settings', persist, 300); } // a chave só é gravada se o usuário pedir
+
+/* =====================================================================
+   Modelos, preços e estimativas
+   Preços em US$ por milhão de tokens (entrada/saída). k = fator do tokenizador:
+   modelos 4.7+ geram ~30% mais tokens para o mesmo texto.
+   ===================================================================== */
+const MODELS = {
+  'claude-sonnet-5-5': { name: 'Sonnet 5.5', pin: 2, pout: 10, k: 1.3 },
+  'claude-sonnet-4-6': { name: 'Sonnet 4.6', pin: 3, pout: 15, k: 1 },
+  'claude-haiku-4-5': { name: 'Haiku 4.5', pin: 1, pout: 5, k: 1 },
+  'claude-opus-5-5': { name: 'Opus 5.5', pin: 4, pout: 20, k: 1.3 },
+};
+const modelInfo = (m = S.settings.model) => MODELS[m] || { ...MODELS['claude-sonnet-5-5'], name: `${m} (preço do Sonnet 5.5)` };
+const PAGE_WORDS = 350;            // palavras por página de livro de bolso
+const RETRY_FACTOR = 1.15;         // margem para blocos refeitos pela verificação
+const LEVEL_RATIO = { A1: 1.12, A2: 1.06, B1: 1.0, B2: 0.98 }; // extensão adaptada / original (antes de haver dados reais)
+const chWords = (book, ci) => book.chapters[ci].paras.reduce((a, p) => a + wc(p), 0);
+const blockSrc = (book, b) => book.chapters[b.ch].paras.slice(b.p0, b.p1 + 1).join('\n\n');
+const shortTitle = t => t.replace(/^(chapter|cap[ií]tulo)\s+[^—]+—\s*/i, '') || t;
+
+function levelRatio(book, ad, level) {
+  if (ad) {
+    let src = 0, out = 0, n = 0;
+    for (const b of ad.blocks) if (b.out != null) { src += wc(blockSrc(book, b)); out += wc(b.out); n++; }
+    if (n >= 3 && src) return out / src;
+  }
+  return LEVEL_RATIO[level] || 1;
+}
+function estimate(book, ad, level, chs) {
+  const blocks = ad ? ad.blocks : makeBlocks(book), mi = modelInfo(), ratio = levelRatio(book, ad, level);
+  const sys = systemPrompt(level).length;
+  let words = 0, pending = 0, done = 0, cost = 0;
+  chs.forEach(ci => { if (book.chapters[ci]) words += chWords(book, ci); });
+  for (const b of blocks) {
+    if (!chs.has(b.ch)) continue;
+    if (b.out != null) { done++; continue; }
+    pending++;
+    const src = blockSrc(book, b).length;                       // caracteres (~4 por token)
+    const tin = (sys + 700 + 650 + src) / 4 * mi.k;            // sistema + instruções + contexto anterior + trecho
+    const tout = src * ratio / 4 * mi.k;
+    cost += (tin * mi.pin + tout * mi.pout) / 1e6;
+  }
+  return { n: chs.size, words, ratio, pending, done, cost: cost * RETRY_FACTOR, model: mi.name,
+    pagesOrig: Math.max(1, Math.round(words / PAGE_WORDS)), pagesAd: Math.max(1, Math.round(words * ratio / PAGE_WORDS)) };
+}
+function usageCost(u, model) {
+  if (!u) return 0;
+  const mi = modelInfo(model);
+  return ((u.input_tokens || 0) * mi.pin + (u.output_tokens || 0) * mi.pout) / 1e6;
+}
+function addUsage(ad, u) {
+  if (!u) return;
+  ad.usage = ad.usage || { in: 0, out: 0, cost: 0 };
+  ad.usage.in += u.input_tokens || 0; ad.usage.out += u.output_tokens || 0; ad.usage.cost += usageCost(u);
+}
+
+/* =====================================================================
+   Níveis (CEFR) — descrição curta (UI) + instruções detalhadas (prompt)
+   ===================================================================== */
+const LEVELS = {
+  A1: { name: 'Iniciante', desc: 'Palavras muito comuns, frases bem curtas, quase tudo no presente e passado simples.',
+    prompt: `CEFR A1 (beginner):
+- Use only very common, concrete words (roughly the 1,000 most frequent English words). Replace rare, abstract or literary words with simple ones, or explain them with a few simple words.
+- Very short sentences, usually 5–10 words, one idea per sentence. Split long sentences into several short ones.
+- Grammar: present simple, present continuous, past simple of common verbs, "can", "there is/are", "want to", simple imperatives. Avoid perfect tenses, passive voice, conditionals, reported speech and long relative clauses.
+- Keep dialogue as short, direct speech.` },
+  A2: { name: 'Básico', desc: 'Vocabulário do dia a dia, frases simples, passado simples e futuro com going to/will.',
+    prompt: `CEFR A2 (elementary):
+- Use everyday vocabulary (roughly the 2,000 most frequent English words). Replace rare, old-fashioned or literary words with common ones.
+- Short, clear sentences, usually 8–14 words. Split long sentences.
+- Grammar: present simple/continuous, past simple, past continuous, "going to", "will", "can/could/must/should", comparatives, simple connectors (and, but, because, so, when, then). Avoid complex passives, perfect continuous tenses, third conditional and long embedded clauses.` },
+  B1: { name: 'Intermediário', desc: 'Vocabulário mais amplo, present perfect, condicionais simples, frases de tamanho médio.',
+    prompt: `CEFR B1 (intermediate):
+- Use common vocabulary (roughly the 3,500 most frequent words). Replace idioms, archaic words and rare literary vocabulary with clear modern equivalents.
+- Sentences up to about 20 words; break up very long or complex sentences.
+- Grammar: all common tenses including present perfect and, when needed, past perfect; first and second conditionals; simple passive; relative clauses; reported speech.` },
+  B2: { name: 'Interm. superior', desc: 'Próximo do original: só moderniza termos raros/arcaicos e desfaz frases muito complexas.',
+    prompt: `CEFR B2 (upper-intermediate):
+- Keep the author's voice and most of the original wording. Modernize archaic language, replace rare or very literary words with more common ones, and untangle very long or complex sentences.
+- All tenses and structures are allowed, but prefer clarity.` },
+};
+
+/* =====================================================================
+   Parsing: TXT, EPUB (ZIP próprio) e normalização
+   ===================================================================== */
+function splitLongPara(p) {
+  if (wc(p) <= 700) return [p];
+  const ss = splitSentences(p), out = []; let cur = '';
+  for (const s of ss) { if (wc(cur) + wc(s) > 300 && cur) { out.push(cur.trim()); cur = ''; } cur += s + ' '; }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+function normalizeBook(b) {
+  b.chapters = b.chapters.map(c => ({ title: c.title, paras: c.paras.map(p => p.replace(/\s+/g, ' ').trim()).filter(Boolean).flatMap(splitLongPara) }))
+    .filter(c => c.paras.length);
+  if (!b.chapters.length) throw new Error('Nenhum texto encontrado');
+  return b;
+}
+
+const HEAD_RE = /^[\s\-–—*#_.=~]*(chapter|chap\.|capítulo|capitulo|book|part|stave|letter|prologue|epilogue|preface)\b[\s.:\-–—]*([0-9]+|[ivxlcdm]+\b|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[a-z]+teen|twenty[a-z\- ]*|thirty[a-z\- ]*|forty[a-z\- ]*|fifty[a-z\- ]*|the [a-z]+)?[\s.:\-–—*#_=~]*$/i;
+const cleanHead = s => s.replace(/^[\s\-–—*#_.=~]+|[\s\-–—*#_.=~]+$/g, '').trim();
+const isSubLine = s => !!s && s.length < 45 && !/[.!?"'”’;:]$/.test(s) && !/^['"‘“(]/.test(s) && s !== s.toUpperCase() && !HEAD_RE.test(s) && wc(s) <= 7;
+function parseTxt(raw, fallbackTitle) {
+  let t = raw.replace(/\r\n?/g, '\n').replace(/\uFEFF/g, '');
+  const mt = t.match(/^Title:\s*(.+)$/m), ma = t.match(/^Author:\s*(.+)$/m);
+  const st = t.search(/\*\*\*\s*START OF (THE|THIS) PROJECT GUTENBERG[^\n]*/i);
+  if (st >= 0) t = t.slice(t.indexOf('\n', st) + 1);
+  const en = t.search(/\*\*\*\s*END OF (THE|THIS) PROJECT GUTENBERG/i);
+  if (en >= 0) t = t.slice(0, en);
+  // Formato: parágrafos separados por linha em branco (Gutenberg) ou um parágrafo por linha
+  const lines = t.split('\n'), nonEmpty = lines.filter(l => l.trim());
+  const blank = lines.length - nonEmpty.length;
+  const avgLen = nonEmpty.reduce((a, l) => a + l.trim().length, 0) / (nonEmpty.length || 1);
+  const lineMode = blank < nonEmpty.length * 0.05 || avgLen > 160;
+  let paras = lineMode ? nonEmpty.map(l => l.trim())
+    : t.split(/\n[ \t]*\n+/).map(p => p.replace(/\s*\n\s*/g, ' ').trim()).filter(Boolean);
+  paras = paras.map(p => /^[\s*·•~#=_-]+$/.test(p) ? '* * *' : p); // quebras de cena
+
+  // Título e autor nas primeiras linhas (quando não há cabeçalho Gutenberg)
+  let title = mt ? mt[1].trim() : '', author = ma ? ma[1].trim() : '';
+  if (!mt && paras[0] && !HEAD_RE.test(paras[0]) && paras[0].length < 90 && !/[.!?]$/.test(paras[0])) {
+    title = paras.shift();
+    if (paras[0] && !HEAD_RE.test(paras[0]) && paras[0].length < 60 && !/[.!?]$/.test(paras[0])) author = paras.shift();
+  }
+
+  const chapters = []; let cur = { title: 'Início', paras: [] };
+  for (let i = 0; i < paras.length; i++) {
+    const p = paras[i];
+    if (p.length < 100 && HEAD_RE.test(p)) {
+      if (cur.paras.length) chapters.push(cur); // nunca descarta texto
+      const ct = cleanHead(p), extra = [];
+      // subtítulo pode ocupar até 3 linhas curtas ("Number Twelve," / "Grimmauld Place")
+      while (extra.length < 3 && isSubLine(paras[i + 1])) extra.push(paras[++i]);
+      cur = { title: extra.length ? `${ct} — ${extra.join(' ')}` : ct, paras: [] };
+    } else cur.paras.push(p);
+  }
+  if (cur.paras.length) chapters.push(cur);
+  let chs = chapters;
+  if (chapters.length < 2) { // sem títulos: divide em partes de ~2.500 palavras
+    const all = chapters.flatMap(c => c.paras); chs = []; let part = { title: 'Parte 1', paras: [] }, w = 0;
+    for (const p of all) { part.paras.push(p); w += wc(p); if (w >= 2500) { chs.push(part); part = { title: `Parte ${chs.length + 1}`, paras: [] }; w = 0; } }
+    if (part.paras.length) chs.push(part);
+    if (chs.length === 1) chs[0].title = 'Texto';
+  }
+  return { title: title || fallbackTitle || 'Sem título', author, chapters: chs };
+}
+
+async function unzip(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf), td = new TextDecoder();
+  let eocd = -1;
+  for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('arquivo EPUB/ZIP inválido');
+  const count = dv.getUint16(eocd + 10, true); let off = dv.getUint32(eocd + 16, true);
+  const files = {};
+  for (let k = 0; k < count; k++) {
+    if (dv.getUint32(off, true) !== 0x02014b50) break;
+    const method = dv.getUint16(off + 10, true), csize = dv.getUint32(off + 20, true);
+    const nlen = dv.getUint16(off + 28, true), elen = dv.getUint16(off + 30, true), clen = dv.getUint16(off + 32, true), lho = dv.getUint32(off + 42, true);
+    files[td.decode(u8.subarray(off + 46, off + 46 + nlen))] = { method, csize, lho };
+    off += 46 + nlen + elen + clen;
+  }
+  const lower = {}; for (const n in files) lower[n.toLowerCase()] = n;
+  return {
+    async read(name) {
+      const f = files[name] || files[lower[String(name).toLowerCase()]]; if (!f) return null;
+      const start = f.lho + 30 + dv.getUint16(f.lho + 26, true) + dv.getUint16(f.lho + 28, true);
+      const data = u8.subarray(start, start + f.csize);
+      if (f.method === 0) return data;
+      if (f.method !== 8) throw new Error('compressão ZIP não suportada');
+      if (typeof DecompressionStream === 'undefined') throw new Error('navegador sem DecompressionStream (atualize o navegador)');
+      const ds = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return new Uint8Array(await new Response(ds).arrayBuffer());
+    },
+    async text(name) { const d = await this.read(name); return d ? new TextDecoder('utf-8').decode(d) : null; },
+  };
+}
+const parseXml = s => new DOMParser().parseFromString(s, 'application/xml');
+const byTag = (doc, tag) => doc.getElementsByTagNameNS('*', tag)[0] || doc.getElementsByTagName(tag)[0];
+function resolvePath(base, href) {
+  href = decodeURIComponent(String(href).split('#')[0]);
+  const parts = (base + href).split('/'), out = [];
+  for (const p of parts) { if (p === '..') out.pop(); else if (p !== '.' && p !== '') out.push(p); }
+  return out.join('/');
+}
+const dirOf = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/') + 1) : '';
+
+function htmlToParas(html) {
+  let doc = new DOMParser().parseFromString(html, 'application/xhtml+xml');
+  if (doc.getElementsByTagName('parsererror').length) doc = new DOMParser().parseFromString(html, 'text/html');
+  const body = doc.getElementsByTagName('body')[0] || doc.documentElement;
+  const BLOCK = /^(p|div|h[1-6]|li|blockquote|pre|section|article|td|dd|dt|header|footer|aside)$/i;
+  const els = [];
+  (function walk(el) {
+    for (const c of el.children) {
+      if (/^(script|style|nav)$/i.test(c.localName)) continue;
+      const hasBlock = [...c.children].some(x => BLOCK.test(x.localName));
+      if (BLOCK.test(c.localName) && !hasBlock) els.push(c); else walk(c);
+    }
+  })(body);
+  let title = '';
+  const items = els.map(e => ({ tag: e.localName.toLowerCase(), text: (e.textContent || '').replace(/\s+/g, ' ').trim() })).filter(x => x.text);
+  const hi = items.findIndex((x, i) => i < 3 && /^h[1-4]$/.test(x.tag));
+  if (hi >= 0) { title = items[hi].text; items.splice(hi, 1); }
+  return { title, paras: items.map(x => x.text) };
+}
+
+async function tocLabels(z, opf, manifest) {
+  const map = {};
+  try {
+    const nav = Object.values(manifest).find(it => /\bnav\b/.test(it.props));
+    if (nav) {
+      const d = new DOMParser().parseFromString(await z.text(nav.href), 'text/html'); const nb = dirOf(nav.href);
+      for (const a of d.querySelectorAll('nav a[href]')) { const k = resolvePath(nb, a.getAttribute('href')); if (!map[k]) map[k] = a.textContent.replace(/\s+/g, ' ').trim(); }
+    }
+    const spine = byTag(opf, 'spine'); const tocId = spine?.getAttribute('toc');
+    if (tocId && manifest[tocId]) {
+      const ncx = parseXml(await z.text(manifest[tocId].href)); const nb = dirOf(manifest[tocId].href);
+      for (const np of ncx.getElementsByTagNameNS('*', 'navPoint')) {
+        const label = np.getElementsByTagNameNS('*', 'text')[0]?.textContent.trim(); const src = np.getElementsByTagNameNS('*', 'content')[0]?.getAttribute('src');
+        if (label && src) { const k = resolvePath(nb, src); if (!map[k]) map[k] = label; }
+      }
+    }
+  } catch (e) { console.warn('toc', e); }
+  return map;
+}
+
+async function parseEpub(buf, fallbackTitle) {
+  const z = await unzip(buf);
+  const cont = await z.text('META-INF/container.xml'); if (!cont) throw new Error('container.xml ausente');
+  const opfPath = parseXml(cont).getElementsByTagNameNS('*', 'rootfile')[0]?.getAttribute('full-path');
+  const opfTxt = await z.text(opfPath); if (!opfTxt) throw new Error('OPF não encontrado');
+  const opf = parseXml(opfTxt), base = dirOf(opfPath);
+  const title = byTag(opf, 'title')?.textContent.trim() || fallbackTitle;
+  const author = byTag(opf, 'creator')?.textContent.trim() || '';
+  const manifest = {};
+  for (const it of opf.getElementsByTagNameNS('*', 'item'))
+    manifest[it.getAttribute('id')] = { href: resolvePath(base, it.getAttribute('href')), type: it.getAttribute('media-type') || '', props: it.getAttribute('properties') || '' };
+  const labels = await tocLabels(z, opf, manifest);
+  const chapters = [];
+  for (const ref of opf.getElementsByTagNameNS('*', 'itemref')) {
+    if (ref.getAttribute('linear') === 'no') continue;
+    const it = manifest[ref.getAttribute('idref')];
+    if (!it || !/html/.test(it.type) || /\bnav\b/.test(it.props)) continue;
+    const html = await z.text(it.href); if (!html) continue;
+    const { title: t, paras } = htmlToParas(html);
+    if (paras.reduce((a, p) => a + wc(p), 0) < 40) continue; // capa, créditos etc.
+    chapters.push({ title: labels[it.href] || t || `Seção ${chapters.length + 1}`, paras });
+  }
+  if (!chapters.length) throw new Error('nenhum capítulo com texto encontrado');
+  return { title, author, chapters };
+}
+
+/* =====================================================================
+   Frases (para TTS e destaque)
+   ===================================================================== */
+function splitSentences(text) {
+  const raw = String(text).match(/[^.!?…]+(?:[.!?…]+|$)(?:["'”’)\]]+)?\s*/g) || [String(text)];
+  const merged = [];
+  for (const piece of raw) {
+    const prev = merged[merged.length - 1];
+    if (prev && (/\b(Mr|Mrs|Ms|Dr|St|Sr|Jr|Mt|Prof|Capt|Col|Gen|Rev|Lt|vs|etc|No)\.\s*$/i.test(prev) || /(^|\s)[A-Z]\.\s*$/.test(prev) || !/[A-Za-z0-9]/.test(piece) || /^\s*[a-z,;:—–-]/.test(piece)))
+      merged[merged.length - 1] = prev + piece;
+    else merged.push(piece);
+  }
+  const res = [];
+  for (let s of merged) {
+    s = s.trim();
+    while (s.length > 240) { // frases muito longas travam alguns motores de voz
+      let cut = -1;
+      for (const re of [/[;:]\s/g, /,\s/g, /\s?—\s?/g, /\s/g]) {
+        let m, best = -1; re.lastIndex = 0;
+        while ((m = re.exec(s))) { const pos = m.index + m[0].length; if (pos > 60 && pos <= 220) best = pos; }
+        if (best > 0) { cut = best; break; }
+      }
+      if (cut < 0) cut = 220;
+      res.push(s.slice(0, cut).trim()); s = s.slice(cut).trim();
+    }
+    if (s) res.push(s);
+  }
+  return res.length ? res : [String(text)];
+}
+
+/* =====================================================================
+   Word Wise — dicas curtas acima das palavras difíceis (como no Kindle)
+   1) Filtro local: descarta palavras da lista de ~2.900 palavras fáceis (Dale–Chall),
+      com suas flexões, e nomes próprios. Não custa nada.
+   2) As palavras restantes do capítulo vão em lotes para a IA (modelo barato),
+      que devolve o nível CEFR no contexto + dica em inglês simples e em português.
+   3) Resultado guardado por livro/versão/capítulo: cada capítulo só é pago uma vez.
+   ===================================================================== */
+const EASY_RAW = "a able aboard about above absent accept accident account ache aching acorn acre across act acts add address admire adventure afar afraid after afternoon afterward afterwards again against age aged ago agree ah ahead aid aim air airfield airplane airport airship airy alarm alike alive all alley alligator allow almost alone along aloud already also always am america american among amount an and angel anger angry animal another answer ant any anybody anyhow anyone anything anyway anywhere apart apartment ape apiece appear apple april apron are arise arithmetic arm armful army arose around arrange arrive arrived arrow art artist as ash ashes aside ask asleep at ate attack attend attention august aunt author auto automobile autumn avenue awake awaken away awful awfully awhile ax axe baa babe babies back background backward backwards bacon bad badge badly bag bake baker bakery baking ball balloon banana band bandage bang banjo bank banker bar barber bare barefoot barely bark barn barrel base baseball basement basket bat batch bath bathe bathing bathroom bathtub battle battleship bay be beach bead beam bean bear beard beast beat beating beautiful beautify beauty became because become becoming bed bedbug bedroom bedspread bedtime bee beech beef beefsteak beehive been beer beet before beg began beggar begged begin beginning begun behave behind being believe bell belong below belt bench bend beneath bent berries berry beside besides best bet better between bib bible bicycle bid big bigger bill billboard bin bind bird birth birthday biscuit bit bite biting bitter black blackberry blackbird blackboard blackness blacksmith blame blank blanket blast blaze bleed bless blessing blew blind blindfold blinds block blood bloom blossom blot blow blue blueberry bluebird blush board boast boat bob bobwhite bodies body boil boiler bold bone bonnet boo book bookcase bookkeeper boom boot born borrow boss both bother bottle bottom bought bounce bow bowl box boxcar boxer boxes boy boyhood bracelet brain brake bran branch brass brave bread break breakfast breast breath breathe breeze brick bride bridge bright brightness bring broad broadcast broke broken brook broom brother brought brown brush bubble bucket buckle bud buffalo bug buggy build building built bulb bull bullet bum bumblebee bump bun bunch bundle bunny burn burst bury bus bush bushel business busy but butcher butt butter buttercup butterfly buttermilk butterscotch button buttonhole buy buzz by bye cab cabbage cabin cabinet cackle cage cake calendar calf call caller calling came camel camp campfire can canal canary candle candlestick candy cane cannon cannot canoe canyon cap cape capital captain car card cardboard care careful careless carelessness carload carpenter carpet carriage carrot carry cart carve case cash cashier castle cat catbird catch catcher caterpillar catfish catsup cattle caught cause cave ceiling cell cellar cent center cereal certain certainly chain chair chalk champion chance change chap charge charm chart chase chatter cheap cheat check checkers cheek cheer cheese cherry chest chew chick chicken chief child childhood children chill chilly chimney chin china chip chipmunk chocolate choice choose chop chorus chose chosen christen christmas church churn cigarette circle circus citizen city clang clap class classmate classroom claw clay clean cleaner clear clerk clever click cliff climb clip cloak clock close closet cloth clothes clothing cloud cloudy clover clown club cluck clump coach coal coast coat cob cobbler cocoa coconut cocoon cod codfish coffee coffeepot coin cold collar college color colored colt column comb come comfort comic coming company compare conductor cone connect coo cook cooked cookie cookies cooking cool cooler coop copper copy cord cork corn corner correct cost cot cottage cotton couch cough could count counter country county course court cousin cover cow coward cowardly cowboy cozy crab crack cracker cradle cramps cranberry crank cranky crash crawl crazy cream creamy creek creep crept cried cries croak crook crooked crop cross crossing crow crowd crowded crown cruel crumb crumble crush crust cry cub cuff cup cupboard cupful cure curl curly curtain curve cushion custard customer cut cute cutting dab dad daddy daily dairy daisy dam damage dame damp dance dancer dancing dandy danger dangerous dare dark darkness darling darn dart dash date daughter dawn day daybreak daytime dead deaf deal dear death december decide deck deed deep deer defeat defend defense delight den dentist depend deposit describe desert deserve desire desk destroy devil dew diamond did die died dies difference different dig dim dime dine dinner dip direct direction dirt dirty discover dish dislike dismiss ditch dive diver divide do dock doctor does dog doll dollar dolly done donkey door doorbell doorknob doorstep dope dot double dough dove down downstairs downtown dozen drag drain drank draw drawer drawing dream dress dresser dressmaker drew dried drift drill drink drip drive driven driver drop drove drown drowsy drub drum drunk dry duck due dug dull dumb dump during dust dusty duty dwarf dwell dwelt dying each eager eagle ear early earn earth east eastern easy eat eaten edge egg eh eight eighteen eighth eighty either elbow elder eldest electric electricity elephant eleven elf elm else elsewhere empty end ending enemy engine engineer english enjoy enough enter envelope equal erase eraser errand escape eve even evening ever every everybody everyday everyone everything everywhere evil exact except exchange excited exciting excuse exit expect explain extra eye eyebrow fable face facing fact factory fail faint fair fairy faith fake fall false family fan fancy far faraway fare farm farmer farming farther fashion fast fasten fat father fault favor favorite fear feast feather february fed feed feel feet fell fellow felt fence fever few fib fiddle field fife fifteen fifth fifty fig fight figure file fill film finally find fine finger finish fire firearm firecracker fireplace fireworks firing first fish fisherman fist fit fits five fix flag flake flame flap flash flashlight flat flea flesh flew flies flight flip float flock flood floor flop flour flow flower flowery flutter fly foam fog foggy fold folks follow following fond food fool foolish foot football footprint for forehead forest forget forgive forgot forgotten fork form fort forth fortune forty forward fought found fountain four fourteen fourth fox frame free freedom freeze freight french fresh fret friday fried friend friendly friendship frighten frog from front frost frown froze fruit fry fudge fuel full fully fun funny fur furniture further fuzzy gain gallon gallop game gang garage garbage garden gas gasoline gate gather gave gay gear geese general gentle gentleman gentlemen geography get getting giant gift gingerbread girl give given giving glad gladly glance glass glasses gleam glide glory glove glow glue go goal goat gobble god godmother goes going gold golden goldfish golf gone good goodbye goodness goods goody goose gooseberry got govern government gown grab gracious grade grain grand grandchild grandchildren granddaughter grandfather grandma grandmother grandpa grandson grandstand grape grapefruit grapes grass grasshopper grateful grave gravel graveyard gravy gray graze grease great green greet grew grind groan grocery ground group grove grow guard guess guest guide gulf gum gun gunpowder guy ha habit had hail hair haircut hairpin half hall halt ham hammer hand handful handkerchief handle handwriting hang happen happily happiness happy harbor hard hardly hardship hardware hare hark harm harness harp harvest has haste hasten hasty hat hatch hatchet hate haul have having hawk hay hayfield haystack he head headache heal health healthy heap hear heard hearing heart heat heater heaven heavy heel height held hell hello helmet help helper helpful hem hen henhouse her herd here hero hers herself hey hickory hid hidden hide high highway hill hillside hilltop hilly him himself hind hint hip hire his hiss history hit hitch hive ho hoe hog hold holder hole holiday hollow holy home homely homesick honest honey honeybee honeymoon honk honor hood hoof hook hoop hop hope hopeful hopeless horn horse horseback horseshoe hose hospital host hot hotel hound hour house housetop housewife housework how however howl hug huge hum humble hump hundred hung hunger hungry hunk hunt hunter hurrah hurried hurry hurt husband hush hut hymn i ice icy idea ideal if ill important impossible improve in inch inches income indeed indian indoors ink inn insect inside instant instead insult intend interested interesting into invite iron is island it its itself ivory ivy jacket jacks jail jam january jar jaw jay jelly jellyfish jerk jig job jockey join joke joking jolly journey joy joyful joyous judge jug juice juicy july jump june junior junk just keen keep kept kettle key kick kid kill killed kind kindly kindness king kingdom kiss kitchen kite kitten kitty knee kneel knew knife knit knives knob knock knot know known lace lad ladder ladies lady laid lake lamb lame lamp land lane language lantern lap lard large lash lass last late laugh laundry law lawn lawyer lay lazy lead leader leaf leak lean leap learn learned least leather leave leaving led left leg lemon lemonade lend length less lesson let letter letting lettuce level liberty library lice lick lid lie life lift light lightness lightning like likely liking lily limb lime limp line linen lion lip list listen lit little live lively liver lives living lizard load loaf loan loaves lock locomotive log lone lonely lonesome long look lookout loop loose lord lose loser loss lost lot loud love lovely lover low luck lucky lumber lump lunch lying machine machinery mad made magazine magic maid mail mailbox mailman major make making male mama mamma man manager mane manger many map maple marble march mare mark market marriage married marry mask mast master mat match matter mattress may maybe mayor maypole me meadow meal mean means meant measure meat medicine meet meeting melt member men mend meow merry mess message met metal mew mice middle midnight might mighty mile miler milk milkman mill million mind mine miner mint minute mirror mischief miss misspell mistake misty mitt mitten mix moment monday money monkey month moo moon moonlight moose mop more morning morrow moss most mostly mother motor mount mountain mouse mouth move movie movies moving mow much mud muddy mug mule multiply murder music must my myself nail name nap napkin narrow nasty naughty navy near nearby nearly neat neck necktie need needle negro neighbor neighborhood neither nerve nest net never nevermore new news newspaper next nibble nice nickel night nightgown nine nineteen ninety no nobody nod noise noisy none noon nor north northern nose not note nothing notice november now nowhere number nurse nut oak oar oatmeal oats obey ocean october odd of off offer office officer often oh oil old on once one onion only onward open or orange orchard order ore organ other otherwise ouch ought our ours ourselves out outdoors outfit outlaw outline outside outward oven over overalls overcoat overeat overhead overhear overnight overturn owe owing owl own owner ox pa pace pack package pad page paid pail pain painful paint painter painting pair pal palace pale pan pancake pane pansy pants papa paper parade pardon parent park part partly partner party pass passenger past paste pasture pat patch path patter pave pavement paw pay payment pea peace peaceful peach peaches peak peanut pear pearl peas peck peek peel peep peg pen pencil penny people pepper peppermint perfume perhaps person pet phone piano pick pickle picnic picture pie piece pig pigeon piggy pile pill pillow pin pine pineapple pink pint pipe pistol pit pitch pitcher pity place plain plan plane plant plate platform platter play player playground playhouse playmate plaything pleasant please pleasure plenty plow plug plum pocket pocketbook poem point poison poke pole police policeman polish polite pond ponies pony pool poor pop popcorn popped porch pork possible post postage postman pot potato potatoes pound pour powder power powerful praise pray prayer prepare present pretty price prick prince princess print prison prize promise proper protect proud prove prune public puddle puff pull pump pumpkin punch punish pup pupil puppy pure purple purse push puss pussy pussycat put putting puzzle quack quart quarter queen queer question quick quickly quiet quilt quit quite rabbit race rack radio radish rag rail railroad railway rain rainbow rainy raise raisin rake ram ran ranch rang rap rapidly rat rate rather rattle raw ray reach read reader reading ready real really reap rear reason rebuild receive recess record red redbird redbreast refuse reindeer rejoice remain remember remind remove rent repair repay repeat report rest return review reward rib ribbon rice rich rid riddle ride rider riding right rim ring rip ripe rise rising river road roadside roar roast rob robber robe robin rock rocket rocky rode roll roller roof room rooster root rope rose rosebud rot rotten rough round route row rowboat royal rub rubbed rubber rubbish rug rule ruler rumble run rung runner running rush rust rusty rye sack sad saddle sadness safe safety said sail sailboat sailor saint salad sale salt same sand sandwich sandy sang sank sap sash sat satin satisfactory saturday sausage savage save savings saw say scab scales scare scarf school schoolboy schoolhouse schoolmaster schoolroom scorch score scrap scrape scratch scream screen screw scrub sea seal seam search season seat second secret see seed seeing seek seem seen seesaw select self selfish sell send sense sent sentence separate september servant serve service set setting settle settlement seven seventeen seventh seventy several sew shade shadow shady shake shaker shaking shall shame shape share sharp shave she shear shears shed sheep sheet shelf shell shepherd shine shining shiny ship shirt shock shoe shoemaker shone shook shoot shop shopping shore short shot should shoulder shout shovel show shower shut shy sick sickness side sidewalk sideways sigh sight sign silence silent silk sill silly silver simple sin since sing singer single sink sip sir sis sissy sister sit sitting six sixteen sixth sixty size skate skater ski skin skip skirt sky slam slap slate slave sled sleep sleepy sleeve sleigh slept slice slid slide sling slip slipped slipper slippery slit slow slowly sly smack small smart smell smile smoke smooth snail snake snap snapping sneeze snow snowball snowflake snowy snuff snug so soak soap sob socks sod soda sofa soft soil sold soldier sole some somebody somehow someone something sometime sometimes somewhere son song soon sore sorrow sorry sort soul sound soup sour south southern space spade spank sparrow speak speaker spear speech speed spell spelling spend spent spider spike spill spin spinach spirit spit splash spoil spoke spook spoon sport spot spread spring springtime sprinkle square squash squeak squeeze squirrel stable stack stage stair stall stamp stand star stare start starve state states station stay steak steal steam steamboat steamer steel steep steeple steer stem step stepping stick sticky stiff still stillness sting stir stitch stock stocking stole stone stood stool stoop stop stopped stopping store stories stork storm stormy story stove straight strange stranger strap straw strawberry stream street stretch string strip stripes strong stuck study stuff stump stung subject such suck sudden suffer sugar suit sum summer sun sunday sunflower sung sunk sunlight sunny sunrise sunset sunshine supper suppose sure surely surface surprise swallow swam swamp swan swat swear sweat sweater sweep sweet sweetheart sweetness swell swept swift swim swimming swing switch sword swore table tablecloth tablespoon tablet tack tag tail tailor take taken taking tale talk talker tall tame tan tank tap tape tar tardy task taste taught tax tea teach teacher team tear tease teaspoon teeth telephone tell temper ten tennis tent term terrible test than thank thankful thanks thanksgiving that the theater thee their them then there these they thick thief thimble thin thing think third thirsty thirteen thirty this thorn those though thought thousand thread three threw throat throne through throw thrown thumb thunder thursday thy tick ticket tickle tie tiger tight till time tin tinkle tiny tip tiptoe tire tired title to toad toadstool toast tobacco today toe together toilet told tomato tomorrow ton tone tongue tonight too took tool toot tooth toothbrush toothpick top tore torn toss touch tow toward towards towel tower town toy trace track trade train tramp trap tray treasure treat tree trick tricycle tried trim trip trolley trouble truck true truly trunk trust truth try tub tuesday tug tulip tumble tune tunnel turkey turn turtle twelve twenty twice twig twin two ugly umbrella uncle under understand underwear undress unfair unfinished unfold unfriendly unhappy unhurt uniform united unkind unknown unless unpleasant until unwilling up upon upper upset upside upstairs uptown upward us use used useful valentine valley valuable value vase vegetable velvet very vessel victory view village vine violet visit visitor voice vote wag wagon waist wait wake waken walk wall walnut want war warm warn was wash washer washtub waste watch watchman water watermelon waterproof wave wax way wayside we weak weaken weakness wealth weapon wear weary weather weave web wedding wednesday wee weed week weep weigh welcome well went were west western wet whale what wheat wheel when whenever where which while whip whipped whirl whiskey whisky whisper whistle white who whole whom whose why wicked wide wife wiggle wild wildcat will willing willow win wind windmill window windy wine wing wink winner winter wipe wire wise wish wit witch with without woke wolf woman women won wonder wonderful wood wooden woodpecker woods wool woolen word wore work worker workman world worm worn worry worse worst worth would wound wove wrap wrapped wreck wren wring write writing written wrong wrote wrung yard yarn year yell yellow yes yesterday yet yolk yonder you young youngster your yours yourself yourselves youth";
+const EASY = new Set(EASY_RAW.split(' '));
+const WW_ORDER = { B1: 1, B2: 2, C1: 3, C2: 4 };
+const WW_MIN = { more: 1, mid: 2, less: 3 };          // Mais dicas = B1+, Médio = B2+, Menos = C1+
+const WW_BATCH = 70;
+const TOK_RE = /[A-Za-z]+(?:['’-][A-Za-z]+)*/g;
+function stems(w) {
+  const o = [w], add = x => { if (x.length > 1) o.push(x); };
+  w = w.replace(/(n't|n’t|'s|’s|'re|’re|'ve|’ve|'ll|’ll|'d|’d|'m|’m)$/, ''); add(w);
+  if (/ies$/.test(w)) add(w.slice(0, -3) + 'y');
+  if (/es$/.test(w)) add(w.slice(0, -2));
+  if (/s$/.test(w)) add(w.slice(0, -1));
+  for (const suf of ['ed', 'ing', 'er', 'est', 'ly', 'ness', 'ful']) {
+    if (!w.endsWith(suf) || w.length <= suf.length + 2) continue;
+    const b = w.slice(0, -suf.length); add(b); add(b + 'e');
+    if (/([b-df-hj-np-tv-z])\1$/.test(b)) add(b.slice(0, -1));
+    if (/i$/.test(b)) add(b.slice(0, -1) + 'y');
+  }
+  return o;
+}
+const isEasy = w => w.split(/[-'’]/).every(p => p.length < 3 || stems(p).some(x => EASY.has(x)));
+const wwKey = (bookId, version, ch) => `${bookId}:${version}:${ch}`;
+
+/* Palavras candidatas do capítulo → Map(palavra minúscula → trecho de contexto) */
+function wwCandidates(texts) {
+  const lowerSeen = new Set(), midCap = new Set(), occ = [];
+  for (const p of texts) for (const m of p.matchAll(TOK_RE)) {
+    const tk = m[0], l = tk.toLowerCase(), cap = tk[0] !== tk[0].toLowerCase();
+    const before = p.slice(Math.max(0, m.index - 3), m.index).trim();
+    const sentStart = !before || /[.!?…:"'“‘—–(]$/.test(before);
+    if (!cap) lowerSeen.add(l); else if (!sentStart) midCap.add(l);
+    occ.push({ l, cap, p, i: m.index, n: tk.length });
+  }
+  const out = new Map();
+  for (const o of occ) {
+    if (o.l.length < 3 || out.has(o.l)) continue;
+    if (o.cap && !lowerSeen.has(o.l) && midCap.has(o.l)) continue; // nome próprio
+    if (isEasy(o.l)) continue;
+    const a = Math.max(0, o.p.lastIndexOf(' ', Math.max(0, o.i - 70))), b = o.p.indexOf(' ', Math.min(o.p.length, o.i + o.n + 70));
+    out.set(o.l, (a > 0 ? '…' : '') + o.p.slice(a, b < 0 ? undefined : b).trim() + (b > 0 ? '…' : ''));
+  }
+  return out;
+}
+const WW_SYS = `You create "Word Wise" hints (like Kindle) for a Brazilian learner reading an English novel.
+For each numbered word, read its context and decide its CEFR level IN THAT CONTEXT (A1, A2, B1, B2, C1 or C2).
+Reply ONLY with a JSON array, no markdown, no comments.
+Include ONLY words at level B1 or above. Omit A1/A2 words, proper names, and invented names of people or places.
+Each item: [number, "B1|B2|C1|C2", "hint in very simple English, 1–4 words, fitting the context", "tradução curta em português do Brasil, 1–3 palavras, no contexto"]
+Example: [3, "C1", "very dry", "ressecado"]`;
+
+const WW = {
+  loading: new Set(), failed: new Set(), noKeyWarned: false,
+  async get(key) { if (S.gloss[key]) return S.gloss[key]; const v = await Store.get('gloss:' + key); return S.gloss[key] = v || { words: {} }; },
+  missing(g, texts) { const c = wwCandidates(texts); return [...c].filter(([w]) => !(w in g.words)); },
+  estimate(n) {
+    const mi = modelInfo(S.settings.glossModel), batches = Math.ceil(n / WW_BATCH);
+    const tin = (n * 32 + batches * 260) * mi.k, tout = n * 10 * mi.k;   // ~45% das palavras voltam com dica
+    return (tin * mi.pin + tout * mi.pout) / 1e6;
+  },
+  /* Garante as dicas do capítulo aberto (chamado a cada renderização) */
+  async ensure() {
+    if (!S.settings.ww || !R.meta) return;
+    const key = wwKey(R.meta.id, R.version, R.ch);
+    if (this.loading.has(key) || this.failed.has(key)) return;
+    const g = await this.get(key), miss = this.missing(g, R.paras.map(p => p.t));
+    if (!miss.length) return;
+    if (API.needsKey()) { if (!this.noKeyWarned) { this.noKeyWarned = true; toast('As dicas de palavras usam a API: configure a chave em ⚙ na biblioteca.', 4500); } return; }
+    this.fetch(key, g, miss);
+  },
+  async fetch(key, g, miss) {
+    this.loading.add(key);
+    toast(`Gerando dicas de palavras para este capítulo (~${usd(this.estimate(miss.length))})…`, 3000);
+    try {
+      for (let i = 0; i < miss.length; i += WW_BATCH) {
+        const batch = miss.slice(i, i + WW_BATCH);
+        const list = batch.map(([w, ctx], j) => `${j + 1}. ${w} — ${ctx}`).join('\n');
+        const r = await API.withRetry(() => API.call({ model: S.settings.glossModel, system: WW_SYS, max_tokens: 4000,
+          messages: [{ role: 'user', content: `Book: "${R.meta?.title || ''}"\n\n${list}` }] }), { tries: 3 });
+        S.wwUsage.cost += usageCost(r.usage, S.settings.glossModel); Store.setLazy('wwusage', S.wwUsage);
+        let items = [];
+        try { const m = r.text.match(/\[[\s\S]*\]/); items = m ? JSON.parse(m[0]) : []; } catch (e) { console.warn('ww parse', e); }
+        batch.forEach(([w]) => { if (!(w in g.words)) g.words[w] = { l: 'A' }; });   // sem dica = palavra fácil
+        for (const it of items) {
+          if (!Array.isArray(it)) continue;
+          const b = batch[(+it[0]) - 1]; if (!b || !WW_ORDER[it[1]]) continue;
+          g.words[b[0]] = { l: it[1], en: String(it[2] || '').slice(0, 40), pt: String(it[3] || '').slice(0, 40) };
+        }
+        await Store.set('gloss:' + key, g);                                        // grava já: não se perde ao fechar
+        if (R.meta && wwKey(R.meta.id, R.version, R.ch) === key) { if (Player.playing) R.dirty = true; else relayoutKeep(); }
+      }
+    } catch (e) {
+      console.error(e); this.failed.add(key);
+      toast('Não foi possível gerar as dicas: ' + e.message, 5000);
+    } finally { this.loading.delete(key); }
+  },
+};
+/* HTML de uma frase, com <ruby> sobre as palavras que têm dica */
+function sentHTML(text, gm) {
+  if (!gm) return esc(text);
+  const min = WW_MIN[S.settings.wwDensity] || 2, pt = S.settings.wwLang === 'pt';
+  let out = '', last = 0;
+  for (const m of text.matchAll(TOK_RE)) {
+    const g = gm[m[0].toLowerCase()];
+    if (!g || !(WW_ORDER[g.l] >= min)) continue;
+    const hint = pt ? (g.pt || g.en) : (g.en || g.pt); if (!hint) continue;
+    out += esc(text.slice(last, m.index)) + `<ruby>${esc(m[0])}<rt>${esc(hint)}</rt></ruby>`;
+    last = m.index + m[0].length;
+  }
+  return out + esc(text.slice(last));
+}
+
+/* =====================================================================
+   Backup (exportar / importar todos os dados num arquivo .json)
+   ===================================================================== */
+async function exportBackup() {
+  saveProgress(); Store.flush();
+  const keys = (await Store.keys()).filter(k => k !== 'apikey');
+  const data = {};
+  for (const k of keys) { const v = await Store.get(k); if (v != null) data[k] = v; }
+  const stamp = new Date().toISOString().slice(0, 10);
+  const name = `graded-reader-backup-${stamp}.json`;
+  const blob = new Blob([JSON.stringify({ app: 'graded-reader', v: 1, date: new Date().toISOString(), data })], { type: 'application/json' });
+  S.settings.lastBackup = Date.now(); saveSettings();
+  try {
+    const file = new File([blob], name, { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); toast('Backup pronto — salve em Arquivos/iCloud.'); return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('Backup exportado: ' + name, 4000);
+}
+async function importBackup(e) {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (j.app !== 'graded-reader' || !j.data) throw new Error('o arquivo não é um backup deste app');
+    if (!confirm(`Importar o backup de ${new Date(j.date).toLocaleString('pt-BR')}?\nLivros e versões do backup serão adicionados/atualizados neste aparelho.`)) return;
+    for (const [k, v] of Object.entries(j.data)) {
+      if (k === 'library') { const cur = await Store.get('library') || []; const ids = new Set(v.map(m => m.id)); await Store.set('library', [...v, ...cur.filter(m => !ids.has(m.id) && !(m.sample && v.some(x => x.title === m.title)))]); }
+      else if (k === 'vocab') { const cur = await Store.get('vocab') || []; const ks = new Set(v.map(x => x.key)); await Store.set('vocab', [...v, ...cur.filter(x => !ks.has(x.key))]); }
+      else if (k === 'progress' || k === 'bookmarks') await Store.set(k, { ...(await Store.get(k) || {}), ...v });
+      else if (k === 'settings') await Store.set(k, { ...(await Store.get(k) || {}), ...v, rememberKey: S.settings.rememberKey });
+      else await Store.set(k, v);
+    }
+    toast('Backup importado ✓ Recarregando…'); setTimeout(() => location.reload(), 900);
+  } catch (err) { toast('Falha ao importar: ' + err.message, 5000); }
+}
+function storageStatusHTML() {
+  if (Store.backend === 'mem') return `<div class="warnbox"><b>Atenção:</b> este navegador não permite salvar dados (modo privado?). Tudo será perdido ao fechar. Abra numa aba normal ou exporte um backup.</div>`;
+  const last = S.settings.lastBackup ? new Date(S.settings.lastBackup).toLocaleDateString('pt-BR') : 'nunca';
+  return `<div class="okline">✓ Salvo neste aparelho${Store.persisted ? ' (armazenamento persistente)' : ''}</div>
+    <p class="fine">Livros, versões adaptadas, dicas, vocabulário, marcadores e progresso ficam guardados ao fechar o app. Cada bloco adaptado é gravado assim que fica pronto. Último backup: ${last}.</p>`;
+}
+
+/* =====================================================================
+   Biblioteca
+   ===================================================================== */
+async function getBook(id) { if (S.books[id]) return S.books[id]; const b = await Store.get('book:' + id); if (b) S.books[id] = b; return b; }
+async function getAdapt(id, l) { const k = id + ':' + l; if (S.adapt[k]) return S.adapt[k]; const v = await Store.get('adapt:' + k); if (v) S.adapt[k] = v; return v || null; }
+
+async function addBook(b, opts = {}) {
+  normalizeBook(b);
+  const id = uid(); b.id = id;
+  const words = b.chapters.reduce((a, c) => a + c.paras.reduce((x, p) => x + wc(p), 0), 0);
+  const meta = { id, title: b.title || 'Sem título', author: b.author || '', color: colorFor(b.title), words, chapters: b.chapters.length, added: Date.now(), levels: {}, sample: !!opts.sample };
+  S.books[id] = b; S.library.unshift(meta);
+  await Store.set('book:' + id, b); await Store.set('library', S.library);
+  if (!opts.silent) renderLibrary();
+  return meta;
+}
+async function deleteBook(id) {
+  Queue.jobs = Queue.jobs.filter(j => j.bookId !== id);
+  S.library = S.library.filter(m => m.id !== id); delete S.books[id]; delete S.progress[id]; delete S.bookmarks[id];
+  await Store.del('book:' + id); for (const l of LV) { delete S.adapt[id + ':' + l]; await Store.del('adapt:' + id + ':' + l); }
+  for (const k of await Store.keys()) if (k.startsWith('gloss:' + id + ':')) { delete S.gloss[k.slice(6)]; await Store.del(k); }
+  await Store.set('library', S.library); Store.setLazy('progress', S.progress); Store.setLazy('bookmarks', S.bookmarks);
+  closeSheet(); renderLibrary(); toast('Livro removido');
+}
+
+function renderLibrary() {
+  const cards = S.library.map(m => {
+    const pct = S.progress[m.id]?.pct || 0;
+    const lv = LV.filter(l => m.levels?.[l]?.done).map(l => { const s = m.levels[l]; const full = s.done >= s.total;
+      return `<span class="badge ${full ? 'ok' : ''}">${l}${full ? '' : ' ' + Math.round(100 * s.done / s.total) + '%'}</span>`; }).join('');
+    return `<button class="card" data-act="book" data-id="${m.id}">
+      <div class="cover" style="--c:${m.color}"><div class="ct">${esc(m.title)}</div><div class="ca">${esc(m.author)}</div></div>
+      <div class="meta">${pct ? `<span>${Math.round(pct * 100)}% lido</span>` : `<span>${fmtN(m.words)} palavras</span>`}${lv}</div>
+      ${pct ? `<div class="thin"><i style="width:${pct * 100}%"></i></div>` : ''}</button>`;
+  }).join('');
+  const job = Queue.jobs[0]; let qbar = '';
+  if (job) {
+    const ad = S.adapt[job.key]; const m = metaOf(job.bookId); const jp = ad ? jobProgress(job, ad) : { d: 0, t: 1 };
+    qbar = `<div class="qbar"><span>${Queue.paused ? 'Pausado' : 'Adaptando'} <b>${job.level}</b> · ${esc(m?.title || '')}</span><div class="bar"><i style="width:${100 * jp.d / jp.t}%"></i></div><span>${jp.d}/${jp.t}</span>
+      <button class="btn sm" data-act="${Queue.paused ? 'resume' : 'pause'}">${Queue.paused ? 'Retomar' : 'Pausar'}</button></div>`;
+  }
+  const warn = Store.backend === 'mem' ? `<div class="warnbox"><b>Dados não estão sendo salvos</b> neste navegador (modo privado ou bloqueio). Feche e abra numa aba normal antes de gerar adaptações.</div>` : '';
+  $('#library').innerHTML = `<div class="lib">
+    <div class="lib-head"><h1>Biblioteca</h1><div>
+      <button class="icon-btn" data-act="vocab" title="Vocabulário">${ic('vocab')}${S.vocab.length ? `<span class="dot">${S.vocab.length}</span>` : ''}</button>
+      <button class="icon-btn" data-act="settings" title="Configurações e backup">${ic('gear')}</button></div></div>
+    <p class="sub">Leia em inglês no seu nível. A versão adaptada mantém a história inteira — só o idioma é simplificado.</p>
+    ${warn}
+    <div class="chips">
+      <label class="btn">${ic('upload')} Importar .txt / .epub<input type="file" id="file" accept=".txt,.epub,text/plain,application/epub+zip" hidden></label>
+      <button class="btn" data-act="paste">${ic('clip')} Colar texto</button></div>
+    <div class="grid">${cards || '<p class="empty">Nenhum livro ainda.</p>'}</div>${qbar}</div>`;
+  $('#file').onchange = onFile;
+}
+
+async function onFile(e) {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    toast('Importando…');
+    const book = /\.epub$/i.test(f.name) ? await parseEpub(await f.arrayBuffer(), f.name.replace(/\.epub$/i, ''))
+      : parseTxt(await f.text(), f.name.replace(/\.[^.]+$/, ''));
+    const meta = await addBook(book);
+    toast(`“${meta.title}” importado · ${meta.chapters} capítulo(s)`);
+    openBookSheet(meta.id);
+  } catch (err) { console.error(err); toast('Não foi possível importar: ' + err.message, 5000); }
+}
+
+/* =====================================================================
+   API Anthropic com nova tentativa
+   ===================================================================== */
+const API = {
+  needsKey() { return /api\.anthropic\.com/i.test(S.settings.endpoint) && !S.settings.apiKey; },
+  async call({ system, messages, max_tokens = 2048, signal, model }) {
+    const s = S.settings;
+    if (this.needsKey()) { const err = new Error('chave da API não configurada'); err.noKey = true; throw err; }
+    // O cabeçalho de acesso direto é obrigatório para chamadas feitas pelo navegador (CORS)
+    const headers = { 'content-type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+    if (s.apiKey) headers['x-api-key'] = s.apiKey;
+    let res;
+    try { res = await fetch(s.endpoint, { method: 'POST', headers, body: JSON.stringify({ model: model || s.model, max_tokens, system, messages }), signal }); }
+    catch (e) {
+      if (e.name === 'AbortError') throw e;
+      const err = new Error(navigator.onLine === false ? 'sem conexão com a internet' : 'falha de rede ao acessar a API (verifique internet, endpoint ou bloqueio do navegador/rede corporativa)');
+      err.retry = true; throw err;
+    }
+    if (!res.ok) {
+      let msg = ''; try { msg = (await res.json()).error?.message || ''; } catch (e) {}
+      const err = new Error(`API ${res.status}${msg ? ': ' + msg : ''}${res.status === 401 ? ' — chave inválida; confira em ⚙' : ''}`); err.status = res.status; throw err;
+    }
+    const data = await res.json();
+    return { text: (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim(), stop: data.stop_reason, usage: data.usage };
+  },
+  async withRetry(fn, { tries = 4, onRetry, signal } = {}) {
+    let last;
+    for (let i = 0; i < tries; i++) {
+      try { return await fn(i); }
+      catch (e) {
+        last = e;
+        if (e.name === 'AbortError' || e.noKey || signal?.aborted) throw e;
+        const retryable = e.retry || !e.status || [408, 409, 429].includes(e.status) || e.status >= 500;
+        if (!retryable || i === tries - 1) throw e;
+        const wait = Math.min(30000, 2000 * 2 ** i) + Math.random() * 600;
+        onRetry?.(e, i + 1, wait);
+        await sleep(wait, signal);
+      }
+    }
+    throw last;
+  },
+};
+
+/* =====================================================================
+   Adaptação — REGRA CENTRAL aplicada no prompt e verificada no código
+   ===================================================================== */
+function systemPrompt(level) {
+  return `You are an expert author of graded readers for learners of English. You rewrite literary text so that a learner at a given CEFR level can read it.
+
+INVIOLABLE RULE — FAITHFUL ADAPTATION, NOT A SUMMARY:
+- NEVER summarize, shorten, cut, skip, reorder, add to, or change the story in any way.
+- Keep EVERY event, action, description that matters, character, and line of dialogue, in the ORIGINAL ORDER, with the original tone and point of view.
+- Every sentence of the original must be represented in your version, in the same order. You may split one long sentence into several short ones; you may never drop content.
+- Dialogue stays dialogue (in quotation marks), spoken by the same characters.
+- Keep names of people and places and other essential story terms exactly as in the original.
+- Your version must have a SIMILAR LENGTH to the original (about 85%–130% of its word count). Simpler language usually needs the same number of words or more, not fewer.
+- Keep the SAME number of paragraphs, in the same order, separated by one blank line. Paragraph N of your text corresponds to paragraph N of the original.
+- Only the language changes: vocabulary, sentence length and verb tenses suitable for the level.
+
+TARGET LANGUAGE LEVEL:
+${LEVELS[level].prompt}
+
+OUTPUT FORMAT: Output ONLY the adapted text. No title, no introduction, no notes, no comments, no explanations, no markdown, no XML tags.`;
+}
+function userPrompt({ book, chTitle, level, src, n, w, prev, feedback }) {
+  return `BOOK: "${book.title}"${book.author ? ' by ' + book.author : ''}
+CHAPTER: "${chTitle}"
+TARGET LEVEL: CEFR ${level}
+${prev ? `
+END OF THE PREVIOUS ADAPTED PASSAGE (context only, do NOT repeat or rewrite it; continue with the same style, names and terms):
+<previous>
+${prev}
+</previous>
+` : ''}
+ORIGINAL PASSAGE TO ADAPT (${n} paragraph${n > 1 ? 's' : ''}, ${w} words):
+<original>
+${src}
+</original>
+
+Rewrite the passage at CEFR ${level}. Output exactly ${n} paragraph${n > 1 ? 's' : ''} separated by blank lines and about ${w} words (at least ${Math.round(w * 0.85)}). Keep every event, detail, character and line of dialogue, in the same order.${feedback ? `
+
+YOUR PREVIOUS ATTEMPT WAS REJECTED because: ${feedback}. Fix this and follow every rule strictly.` : ''}`;
+}
+function cleanOutput(t) {
+  t = String(t).replace(/\r/g, '').replace(/^```[a-z]*\n?|```$/gim, '').replace(/<\/?(original|previous|adapted|text)>/gi, '').trim();
+  t = t.replace(/^(here is|here's|sure|certainly|below is)[^\n]*:\s*\n+/i, '');
+  t = t.replace(/\n+\s*\(?note:[^\n]*$/i, '');
+  return t.replace(/\n{3,}/g, '\n\n').trim();
+}
+const parasOf = t => t.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+function validateAdaptation(src, out, n, stop) {
+  const a = wc(src), b = wc(out), issues = [];
+  if (!b) return ['the answer was empty'];
+  if (stop === 'max_tokens') issues.push('the answer was cut off before the end');
+  if (a >= 40 && b / a < 0.75) issues.push(`it is too short (${b} words vs ${a} in the original) — content was summarized or cut`);
+  if (a >= 40 && b / a > 1.9) issues.push(`it is too long (${b} words vs ${a}) — content may have been added`);
+  const p = parasOf(out).length; if (p !== n) issues.push(`it has ${p} paragraphs but the original has ${n}`);
+  return issues;
+}
+function fixParaCount(out, n) {
+  const ps = parasOf(out);
+  if (ps.length > n && n > 0) { const head = ps.slice(0, n - 1); head.push(ps.slice(n - 1).join(' ')); return head.join('\n\n'); }
+  return ps.join('\n\n');
+}
+const lastWords = (t, n) => { const w = t.split(/\s+/); return (w.length > n ? '… ' : '') + w.slice(-n).join(' '); };
+
+function makeBlocks(book) {
+  const blocks = [];
+  book.chapters.forEach((c, ci) => {
+    let start = 0, w = 0;
+    c.paras.forEach((p, pi) => {
+      w += wc(p);
+      if (w >= 450 || pi === c.paras.length - 1) { blocks.push({ ch: ci, p0: start, p1: pi, out: null, warn: '' }); start = pi + 1; w = 0; }
+    });
+  });
+  return blocks;
+}
+const doneCount = ad => ad.blocks.filter(b => b.out != null).length;
+function chProgress(ad, ci) {
+  if (!ad) return { d: 0, t: 0 };
+  const bs = ad.blocks.filter(b => b.ch === ci);
+  return { d: bs.filter(b => b.out != null).length, t: bs.length };
+}
+
+async function ensureAdapt(bookId, level) {
+  let ad = await getAdapt(bookId, level);
+  if (!ad) {
+    const book = await getBook(bookId);
+    ad = { key: bookId + ':' + level, bookId, level, blocks: makeBlocks(book), created: Date.now(), usage: { in: 0, out: 0, cost: 0 } };
+    S.adapt[ad.key] = ad; await saveAdapt(ad);
+  }
+  return ad;
+}
+async function saveAdapt(ad) {
+  await Store.set('adapt:' + ad.key, ad);
+  const m = metaOf(ad.bookId); if (m) { m.levels = m.levels || {}; m.levels[ad.level] = { done: doneCount(ad), total: ad.blocks.length }; await Store.set('library', S.library); }
+}
+
+async function adaptBlock(book, ad, i, signal) {
+  const b = ad.blocks[i], c = book.chapters[b.ch];
+  const paras = c.paras.slice(b.p0, b.p1 + 1), src = paras.join('\n\n'), n = paras.length, w = wc(src);
+  const prevB = ad.blocks[i - 1]; const prev = prevB?.out ? lastWords(prevB.out, 110) : '';
+  let feedback = '', best = null, maxTok = clamp(Math.ceil(w * 3) + 600, 1200, 8000);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const r = await API.withRetry(() => API.call({ system: systemPrompt(ad.level), max_tokens: maxTok, signal,
+      messages: [{ role: 'user', content: userPrompt({ book, chTitle: c.title, level: ad.level, src, n, w, prev, feedback }) }] }),
+      { signal, onRetry: (e, k, ms) => Queue.setNote(`Erro (${e.message}). Nova tentativa ${k} em ${Math.round(ms / 1000)} s…`) });
+    addUsage(ad, r.usage);
+    const out = cleanOutput(r.text);
+    const issues = validateAdaptation(src, out, n, r.stop);
+    if (!issues.length) { b.out = out; b.warn = ''; Queue.setNote(''); return; }
+    if (!best || issues.length < best.issues.length) best = { out, issues };
+    feedback = issues.join('; ');
+    if (r.stop === 'max_tokens') maxTok = Math.min(8000, maxTok * 2);
+    Queue.setNote(`Bloco ${i + 1}: verificação recusou (${issues[0]}). Refazendo…`);
+  }
+  b.out = fixParaCount(best.out, n); b.warn = best.issues.join('; ');
+}
+
+/* Fila de geração por capítulos selecionados, com pausar/retomar */
+function jobProgress(job, ad) {
+  const bs = ad.blocks.filter(b => job.chs.has(b.ch));
+  return { d: bs.filter(b => b.out != null).length, t: bs.length || 1 };
+}
+const Queue = {
+  jobs: [], running: false, paused: false, ctrl: null, note: '',
+  job(key) { return this.jobs.find(j => j.key === key); },
+  status(key) { if (!this.job(key)) return 'idle'; if (this.paused) return 'paused'; return this.jobs[0].key === key ? 'running' : 'queued'; },
+  async add(bookId, level, chs) {
+    if (API.needsKey()) { openSettings('Para gerar a versão adaptada, informe sua chave da API Anthropic (platform.claude.com → API Keys).'); return; }
+    if (!chs || !chs.size) { toast('Selecione ao menos um capítulo.'); return; }
+    const ad = await ensureAdapt(bookId, level);
+    if (!ad.blocks.some(b => chs.has(b.ch) && b.out == null)) { toast('Os capítulos selecionados já estão adaptados.'); return; }
+    const j = this.job(ad.key);
+    if (j) chs.forEach(c => j.chs.add(c)); else this.jobs.push({ key: ad.key, bookId, level, chs: new Set(chs) });
+    this.paused = false; refreshAll(); this.run();
+  },
+  pause() { this.paused = true; this.ctrl?.abort(); this.note = ''; refreshAll(); },
+  resume() { if (API.needsKey()) { openSettings('Informe a chave da API para retomar a geração.'); return; } this.paused = false; refreshAll(); this.run(); },
+  setNote(t) { this.note = t; $$('.gen-note').forEach(e => e.textContent = t); },
+  async run() {
+    if (this.running) return; this.running = true;
+    while (this.jobs.length && !this.paused) {
+      const job = this.jobs[0];
+      const ad = await getAdapt(job.bookId, job.level), book = await getBook(job.bookId);
+      if (!ad || !book) { this.jobs.shift(); continue; }
+      const i = ad.blocks.findIndex(b => b.out == null && job.chs.has(b.ch));
+      if (i < 0) {
+        this.jobs.shift(); await saveAdapt(ad);
+        toast(`Capítulos selecionados (${job.level}) concluídos e salvos ✓ · gasto real ${usd(ad.usage?.cost)}`, 4500);
+        refreshAll(); continue;
+      }
+      this.ctrl = new AbortController();
+      try { await adaptBlock(book, ad, i, this.ctrl.signal); await saveAdapt(ad); onBlockDone(ad, i); }
+      catch (e) {
+        if (e.noKey) { this.paused = true; this.setNote(''); openSettings('Informe a chave da API para continuar.'); }
+        else if (e.name !== 'AbortError') { console.error(e); this.paused = true; this.setNote('Falhou: ' + e.message); toast('Adaptação pausada: ' + e.message, 6000); }
+      }
+      refreshAll();
+    }
+    this.running = false; this.ctrl = null; refreshAll();
+  },
+};
+function onBlockDone(ad, i) {
+  if (S.ui.view !== 'reader' || !R.meta || R.meta.id !== ad.bookId || R.version !== ad.level) return;
+  R.adapt = ad;
+  if (ad.blocks[i].ch === R.ch) { if (Player.playing) R.dirty = true; else renderChapter(R.ch, { para: anchorPara(), keepAudio: true }); }
+}
+const refreshAll = debounce(() => {
+  if (S.ui.view === 'library') renderLibrary();
+  if (S.ui.sheet === 'book') refreshBookSheet();
+  if (S.ui.view === 'reader' && R.meta) { renderVersions(); renderGenLine(); }
+}, 60);
+
+/* =====================================================================
+   Sheets (painéis inferiores)
+   ===================================================================== */
+let sheetClose = null;
+function openSheet(html, kind = '', onClose = null) {
+  if (sheetClose) { const f = sheetClose; sheetClose = null; f(); }
+  $('#sheet-body').innerHTML = html; $('#sheet').scrollTop = 0;
+  $('#sheet').classList.add('on'); $('#backdrop').classList.add('on');
+  S.ui.sheet = kind; sheetClose = onClose;
+}
+function closeSheet() {
+  $('#sheet').classList.remove('on'); $('#backdrop').classList.remove('on'); S.ui.sheet = '';
+  if (sheetClose) { const f = sheetClose; sheetClose = null; f(); }
+}
+
+/* Seleção de capítulos */
+function quickSel(q, book, ad) {
+  const all = book.chapters.map((_, i) => i);
+  const pend = all.filter(i => { const p = chProgress(ad, i); return !p.t || p.d < p.t; });
+  if (q === 'none') return [];
+  if (q === 'all') return pend.length ? pend : all;
+  return pend.slice(0, 5); // próximos 5 ainda não adaptados
+}
+function getSel(id, lvl) {
+  const k = id + ':' + lvl;
+  if (!S.ui.sel[k]) { const book = S.books[id]; S.ui.sel[k] = new Set(book ? quickSel('next5', book, S.adapt[k]) : []); }
+  return S.ui.sel[k];
+}
+function estHTML(id, lvl) {
+  const book = S.books[id]; if (!book) return '';
+  const ad = S.adapt[id + ':' + lvl], sel = getSel(id, lvl);
+  if (!sel.size) return `<div class="muted">Selecione ao menos um capítulo para ver a estimativa.</div>
+    <button class="btn primary wide" disabled>Adaptar selecionados (${lvl})</button>`;
+  const e = estimate(book, ad, lvl, sel);
+  return `<div class="em"><b>${e.n} capítulo${e.n > 1 ? 's' : ''}</b> · ${e.pagesOrig} página${e.pagesOrig > 1 ? 's' : ''} originais → ~${e.pagesAd} página${e.pagesAd > 1 ? 's' : ''} em inglês ${lvl}</div>
+    <div class="ec">${e.pending ? `Custo estimado: <b>${usd(e.cost)}</b> <span class="muted">· ${esc(e.model)} · ${e.pending} bloco${e.pending > 1 ? 's' : ''}${e.done ? ` (${e.done} já prontos, sem custo)` : ''}</span>`
+      : '<span class="muted">Todos os capítulos selecionados já estão adaptados.</span>'}</div>
+    <button class="btn primary wide" data-act="gen" data-l="${lvl}" ${e.pending ? '' : 'disabled'}>Adaptar selecionados (${lvl})</button>`;
+}
+function updateEstimate() { const el = $('#est'); if (el && S.ui.sheetBook) el.innerHTML = estHTML(S.ui.sheetBook, S.ui.selLevel); }
+
+/* Livro: níveis, capítulos e geração */
+async function openBookSheet(id, level) {
+  S.ui.sheetBook = id; S.ui.selLevel = level || S.ui.selLevel || S.settings.level;
+  await getBook(id);
+  for (const l of LV) await getAdapt(id, l);
+  openSheet(await bookSheetHTML(id), 'book', () => { S.ui.sheetBook = null; });
+}
+async function refreshBookSheet() {
+  if (S.ui.sheet !== 'book' || !S.ui.sheetBook) return;
+  const st = $('#sheet').scrollTop, cl = $('.chlist')?.scrollTop || 0;
+  $('#sheet-body').innerHTML = await bookSheetHTML(S.ui.sheetBook);
+  $('#sheet').scrollTop = st; const l = $('.chlist'); if (l) l.scrollTop = cl;
+}
+async function bookSheetHTML(id) {
+  const m = metaOf(id), book = await getBook(id); if (!m || !book) return '';
+  const lvl = S.ui.selLevel, ads = {};
+  for (const l of LV) ads[l] = await getAdapt(id, l);
+  const cards = LV.map(l => {
+    const ad = ads[l]; let st = '';
+    if (ad && doneCount(ad)) { const d = doneCount(ad), t = ad.blocks.length; const qs = Queue.status(ad.key);
+      st = d === t ? 'Pronta ✓' : `${Math.round(100 * d / t)}% do livro${qs === 'running' ? ' · gerando' : qs === 'queued' ? ' · na fila' : qs === 'paused' ? ' · pausada' : ''}`; }
+    return `<button class="lvl ${l === lvl ? 'on' : ''}" data-act="sel-level" data-l="${l}"><b>${l}</b><span>${LEVELS[l].name}</span><p>${LEVELS[l].desc}</p>${st ? `<div class="st">${st}</div>` : ''}</button>`;
+  }).join('');
+
+  const ad = ads[lvl], sel = getSel(id, lvl);
+  const rows = book.chapters.map((c, i) => {
+    const p = chProgress(ad, i);
+    const badge = p.t && p.d === p.t ? '<span class="badge ok">✓</span>' : p.d ? `<span class="badge">${Math.round(100 * p.d / p.t)}%</span>` : '';
+    return `<label class="chrow"><input type="checkbox" data-ch="${i}" ${sel.has(i) ? 'checked' : ''}><span class="ct">${i + 1}. ${esc(shortTitle(c.title))}</span><span class="cw">${fmtN(chWords(book, i))} pal. ${badge}</span></label>`;
+  }).join('');
+
+  let progress = '';
+  if (ad && (doneCount(ad) || Queue.job(ad.key))) {
+    const d = doneCount(ad), t = ad.blocks.length, qs = Queue.status(ad.key), job = Queue.job(ad.key), warn = ad.blocks.filter(b => b.warn).length;
+    const jp = job ? jobProgress(job, ad) : null;
+    progress = `<div class="genbox">
+      <div class="row"><span>${job ? `${qs === 'paused' ? 'Pausado' : qs === 'queued' ? 'Na fila' : 'Adaptando'}: ${jp.d} de ${jp.t} blocos selecionados` : `Versão ${lvl}: ${d} de ${t} blocos do livro`}</span><b>${Math.round(100 * (job ? jp.d / jp.t : d / t))}%</b></div>
+      <div class="bar"><i style="width:${100 * (job ? jp.d / jp.t : d / t)}%"></i></div>
+      <div class="note">Livro inteiro em ${lvl}: ${Math.round(100 * d / t)}%${ad.usage?.cost ? ` · gasto real até agora: <b>${usd(ad.usage.cost)}</b>` : ''}${Store.has() ? ' · salvo no aparelho' : ''}</div>
+      <div class="note gen-note">${job ? esc(Queue.note) : ''}</div>
+      <div class="row gap">${qs === 'running' || qs === 'queued' ? '<button class="btn" data-act="pause">Pausar</button>' : qs === 'paused' ? '<button class="btn" data-act="resume">Retomar</button>' : ''}
+        ${d > 0 ? `<button class="btn" data-act="read" data-id="${id}" data-v="${lvl}">Ler versão ${lvl}</button>` : ''}</div>
+      ${warn ? `<div class="note warn">${warn} bloco(s) ficaram fora da extensão esperada após 3 tentativas. <button class="link" data-act="redo-warn" data-l="${lvl}">Refazer esses blocos</button></div>` : ''}</div>`;
+  }
+
+  return `<div class="bs-head"><div class="cover sm" style="--c:${m.color}"><div class="ct">${esc(m.title)}</div></div>
+    <div><h3>${esc(m.title)}</h3><div class="muted">${esc(m.author || 'Autor desconhecido')}</div><div class="muted sm">${fmtN(m.words)} palavras · ~${fmtN(Math.round(m.words / PAGE_WORDS))} páginas · ${m.chapters} capítulo(s)</div></div></div>
+    <button class="btn wide" data-act="read" data-id="${id}" data-v="orig">Ler original</button>
+    <div class="sec"><span class="lbl">Nível da versão adaptada</span><div class="levels">${cards}</div></div>
+    <div class="sec">
+      <div class="row"><span class="lbl" style="margin:0">Capítulos a adaptar</span>
+        <span class="chq"><button class="link" data-act="ch-quick" data-q="next5">Próximos 5</button> · <button class="link" data-act="ch-quick" data-q="all">Todos</button> · <button class="link" data-act="ch-quick" data-q="none">Limpar</button></span></div>
+      <div class="chlist">${rows}</div>
+      <div class="est" id="est">${estHTML(id, lvl)}</div>
+      <p class="fine">Modelo: ${esc(modelInfo().name)} · <button class="link" style="padding:0" data-act="settings">alterar</button>. Estimativa com ${PAGE_WORDS} palavras por página e margem de ${Math.round((RETRY_FACTOR - 1) * 100)}% para blocos refeitos; o valor real aparece no progresso.</p>
+    </div>
+    ${progress}
+    <p class="fine">A adaptação reescreve o inglês sem resumir, cortar, reordenar ou mudar a história: todos os eventos, personagens e diálogos ficam, na mesma ordem e com extensão semelhante. Cada bloco é verificado automaticamente (tamanho e nº de parágrafos) e refeito se não passar.</p>
+    <button class="link danger" data-act="del-book" data-id="${id}">Remover livro</button>`;
+}
+
+function openPaste() {
+  openSheet(`<h3>Colar texto</h3>
+    <div class="sec"><span class="lbl">Título</span><input type="text" id="p-title" placeholder="Ex.: The Gift of the Magi"></div>
+    <div class="sec"><span class="lbl">Autor (opcional)</span><input type="text" id="p-author"></div>
+    <div class="sec"><span class="lbl">Texto em inglês</span><textarea id="p-text" placeholder="Cole aqui. Separe parágrafos com uma linha em branco. Linhas como “Chapter 1” viram capítulos."></textarea></div>
+    <button class="btn primary wide" data-act="paste-ok">Adicionar à biblioteca</button>`, 'paste');
+}
+function openSettings(msg) {
+  const s = S.settings;
+  S.ui.returnBook = S.ui.sheetBook || (msg ? S.ui.returnBook : null);
+  const opts = Object.entries(MODELS).map(([id, m]) => `<option value="${id}">${m.name} — US$ ${m.pin} / ${m.pout} por milhão de tokens</option>`).join('');
+  openSheet(`<h3>Configurações</h3>
+    ${msg ? `<div class="note warn" style="margin:4px 0 10px">${esc(msg)}</div>` : ''}
+    <div class="sec"><span class="lbl">Chave da API Anthropic</span><input type="password" id="set-key" value="${esc(s.apiKey)}" placeholder="sk-ant-..." autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label class="chk"><input type="checkbox" id="set-remember" ${s.rememberKey ? 'checked' : ''}><span>Lembrar a chave neste aparelho<br><span class="muted sm">Fica gravada só neste navegador; não vai para o backup. Não marque em aparelho compartilhado.</span></span></label>
+    <p class="fine">Cole só a chave (começa com sk-ant-). Crie em platform.claude.com → API Keys (exige créditos).</p></div>
+    <div class="sec"><span class="lbl">Modelo da adaptação</span><input type="text" id="set-model" list="model-list" value="${esc(s.model)}" autocapitalize="off" spellcheck="false"><datalist id="model-list">${opts}</datalist>
+    <p class="fine">Sugeridos: claude-sonnet-5-5 (padrão), claude-sonnet-4-6, claude-haiku-4-5.</p></div>
+    <div class="sec"><span class="lbl">Modelo das dicas de palavras</span><input type="text" id="set-gmodel" list="model-list" value="${esc(s.glossModel)}" autocapitalize="off" spellcheck="false">
+    <p class="fine">Tarefa simples: o Haiku 4.5 (mais barato) é suficiente.</p></div>
+    <div class="sec"><span class="lbl">Endpoint</span><input type="text" id="set-ep" value="${esc(s.endpoint)}" autocapitalize="off" spellcheck="false">
+    <p class="fine">Padrão: https://api.anthropic.com/v1/messages</p></div>
+    <div class="row gap"><button class="btn primary" data-act="save-settings">Salvar</button><button class="btn" data-act="test-api">Testar conexão</button></div>
+    <div class="note" id="api-test" style="margin-top:10px"></div>
+    <div class="sec"><span class="lbl">Seus dados</span>${storageStatusHTML()}
+      <div class="row gap"><button class="btn" data-act="export">${ic('download')} Exportar backup</button>
+        <label class="btn">${ic('upload')} Importar backup<input type="file" id="imp" accept=".json,application/json" hidden></label></div>
+      <p class="fine">O backup é um arquivo .json com livros, versões adaptadas, dicas, vocabulário e progresso. Guarde no iCloud Drive/Arquivos: serve para trocar de aparelho ou de navegador sem pagar de novo.</p></div>`, 'settings');
+  $('#imp').onchange = importBackup;
+}
+function readSettingsForm() {
+  let key = $('#set-key').value.trim(), ep = $('#set-ep').value.trim();
+  // aceita o exemplo "curl" colado inteiro: extrai a URL e a chave
+  const urlM = ep.match(/https?:\/\/[^\s"'\\]+/); if (urlM) ep = urlM[0];
+  const keyM = (key + ' ' + $('#set-ep').value).match(/sk-ant-[A-Za-z0-9_\-]+/); if (keyM) key = keyM[0];
+  S.settings.apiKey = key.replace(/^["']|["']$/g, '');
+  S.settings.rememberKey = $('#set-remember').checked ? 1 : 0;
+  S.settings.model = $('#set-model').value.trim() || DEFAULTS.model;
+  S.settings.glossModel = $('#set-gmodel').value.trim() || DEFAULTS.glossModel;
+  S.settings.endpoint = ep || DEFAULTS.endpoint;
+  $('#set-ep').value = S.settings.endpoint; $('#set-key').value = S.settings.apiKey;
+  if (S.settings.rememberKey && S.settings.apiKey) Store.set('apikey', S.settings.apiKey); else Store.del('apikey');
+  WW.failed.clear(); WW.noKeyWarned = false;
+  saveSettings();
+}
+async function testApi() {
+  readSettingsForm();
+  const el = $('#api-test'); el.className = 'note'; el.textContent = 'Testando…';
+  try {
+    const r = await API.call({ system: 'Reply with the single word OK.', max_tokens: 5, messages: [{ role: 'user', content: 'ping' }] });
+    el.textContent = `✓ Conexão funcionando (${S.settings.model} respondeu “${r.text.slice(0, 20)}”).`;
+  } catch (e) { el.className = 'note warn'; el.textContent = '✗ ' + (e.noKey ? 'Informe a chave da API.' : e.message); }
+}
+
+/* =====================================================================
+   Leitor
+   ===================================================================== */
+const vp = () => $('#rv-vp'), ct = () => $('#rv-ct');
+
+async function loadGloss(id, v, n) {
+  for (let i = 0; i < n; i++) { const k = wwKey(id, v, i); if (!S.gloss[k]) { const g = await Store.get('gloss:' + k); if (g) S.gloss[k] = g; } }
+}
+async function openReader(id, version) {
+  const book = await getBook(id), meta = metaOf(id); if (!book || !meta) return;
+  if (R.meta && R.meta.id !== id) Player.stop();
+  R.book = book; R.meta = meta;
+  R.cw = book.chapters.map(c => c.paras.reduce((a, p) => a + wc(p), 0));
+  R.cum = R.cw.reduce((a, w, i) => (a.push(i ? a[i - 1] + R.cw[i - 1] : 0), a), []);
+  const prog = S.progress[id] || {};
+  let v = version || prog.version || 'orig', paraRatio = null;
+  R.adapt = v === 'orig' ? null : await getAdapt(id, v);
+  if (v !== 'orig' && !R.adapt) v = 'orig';
+  const ch = prog.ch || 0, para = prog.para || 0;
+  if (prog.version && prog.version !== v) { const old = R.version; R.version = prog.version; const oldAd = R.adapt;
+    R.adapt = prog.version === 'orig' ? null : await getAdapt(id, prog.version); const n = buildParas(ch).length; paraRatio = n ? para / n : 0; R.adapt = oldAd; R.version = old; }
+  R.version = v;
+  if (prog.audio && prog.audio.version === v) { Player.ch = prog.audio.ch; Player.idx = prog.audio.idx; } else { Player.ch = -1; Player.idx = 0; }
+  showView('reader'); $('#mt-title').textContent = meta.title;
+  applySettings(false);
+  await loadGloss(id, v, book.chapters.length);              // dicas já pagas (sem custo)
+  renderChapter(clamp(ch, 0, book.chapters.length - 1), paraRatio != null ? { paraRatio } : { para });
+  if (!S.settings.hinted) { S.settings.hinted = true; saveSettings(); setTimeout(() => toast('Bordas: virar página · Centro (fora de palavras, topo ou rodapé): menu · Palavra: tradução · Aᵇᶜ: dicas de palavras.', 5500), 400); }
+}
+function closeReader() { Player.stop(); saveProgress(); Store.flush(); closeSheet(); R.meta = null; showView('library'); }
+
+function buildParas(ch) {
+  const c = R.book.chapters[ch];
+  if (R.version === 'orig' || !R.adapt) return c.paras.map(t => ({ t, pend: false }));
+  const out = [];
+  for (const b of R.adapt.blocks) {
+    if (b.ch !== ch) continue;
+    if (b.out != null) parasOf(b.out).forEach(t => out.push({ t, pend: false }));
+    else for (let i = b.p0; i <= b.p1; i++) out.push({ t: c.paras[i], pend: true });
+  }
+  return out;
+}
+function chapterQueued() { const j = R.adapt && Queue.job(R.adapt.key); return !!(j && j.chs.has(R.ch)); }
+function pendNoteHTML() {
+  if (chapterQueued()) return `<div class="pend-note">Capítulo em adaptação para ${R.version}. Os trechos em cinza estão no original e serão trocados automaticamente.</div>`;
+  const e = estimate(R.book, R.adapt, R.version, new Set([R.ch]));
+  return `<div class="pend-note">Este capítulo ainda não foi adaptado para ${R.version}; os trechos em cinza estão no original.<br>
+    <button class="btn sm" data-act="gen-ch">Adaptar este capítulo · ~${usd(e.cost)}</button></div>`;
+}
+
+function renderChapter(ch, o = {}) {
+  if (!o.fromPlayer && !o.keepAudio && Player.playing && ch !== R.ch) Player.pause();
+  R.ch = ch; R.paras = buildParas(ch); R.sent = []; R.dirty = false;
+  const c = R.book.chapters[ch];
+  const gm = S.settings.ww ? S.gloss[wwKey(R.meta.id, R.version, ch)]?.words : null;
+  ct().classList.toggle('ww', !!S.settings.ww);
+  let h = `<h2 class="ch-title">${esc(c.title)}</h2>`;
+  if (R.paras.some(p => p.pend)) h += pendNoteHTML();
+  R.paras.forEach((p, pi) => {
+    h += `<p data-p="${pi}"${p.pend ? ' class="pend"' : ''}>` + splitSentences(p.t).map(s => {
+      const i = R.sent.length, html = sentHTML(s, gm); R.sent.push({ p: pi, text: s, html });
+      return `<span class="s" data-s="${i}">${html}</span>`;
+    }).join(' ') + '</p>';
+  });
+  if (S.settings.mode === 'scroll' && ch < R.book.chapters.length - 1) h += `<button class="btn next-ch" data-act="next-ch">Próximo capítulo →</button>`;
+  h += '<div class="end"></div>';
+  ct().innerHTML = h;
+  const els = $$('.s', ct()); R.sent.forEach((s, i) => s.el = els[i]);
+  layout();
+  if (o.paraRatio != null) o.para = Math.min(R.paras.length - 1, Math.floor(o.paraRatio * R.paras.length));
+  if (o.atEnd) { if (S.settings.mode === 'paged') goPage(R.pages - 1, true); else vp().scrollTop = vp().scrollHeight; }
+  else if (o.para > 0) goToPara(o.para);
+  else { if (S.settings.mode === 'paged') goPage(0, true); else vp().scrollTop = 0; }
+  if (Player.playing && Player.ch === R.ch && R.sent[Player.idx]) R.sent[Player.idx].el.classList.add('reading');
+  $$('.ww-btn').forEach(b => b.classList.toggle('on', !!S.settings.ww));
+  renderVersions(); renderGenLine(); updateStatus(); saveProgress();
+  WW.ensure();
+}
+
+function layout() {
+  const v = vp(), c = ct(), m = MARGINS[S.settings.margin] || 28;
+  if (S.settings.mode === 'paged') {
+    v.classList.add('paged'); v.classList.remove('scroll'); v.scrollTop = 0;
+    const W = v.clientWidth, H = v.clientHeight; R.W = W;
+    c.style.cssText = `left:${m}px;width:${W - 2 * m}px;height:${H}px;column-width:${W - 2 * m}px;column-gap:${2 * m}px;transform:translateX(${-R.page * W}px)`;
+    const end = c.querySelector('.end');
+    R.pages = end ? Math.max(1, Math.floor((end.getBoundingClientRect().left - c.getBoundingClientRect().left + 2) / W) + 1) : 1;
+  } else {
+    v.classList.add('scroll'); v.classList.remove('paged');
+    c.style.cssText = `padding:0 ${m}px;`; R.pages = 1; R.page = 0;
+  }
+}
+function goPage(n, instant) {
+  R.page = clamp(n, 0, R.pages - 1);
+  const c = ct();
+  if (instant) { c.classList.add('noanim'); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.remove('noanim'))); }
+  c.style.transform = `translateX(${-R.page * R.W}px)`;
+  updateStatus(); saveProgress();
+}
+const pageOfRect = r => Math.floor((r.left - ct().getBoundingClientRect().left + 2) / R.W);
+function pageOf(el) { const rs = el.getClientRects(); return rs.length ? pageOfRect(rs[0]) : R.page; }
+function goToPara(pi) {
+  const el = ct().querySelector(`[data-p="${pi}"]`); if (!el) return;
+  if (S.settings.mode === 'paged') goPage(pageOf(el), true); else vp().scrollTop = el.offsetTop - 8;
+}
+function anchorPara() {
+  const ps = $$('p[data-p]', ct());
+  if (S.settings.mode === 'paged') {
+    for (const p of ps) { const rs = p.getClientRects(); if (rs.length && pageOfRect(rs[rs.length - 1]) >= R.page) return +p.dataset.p; }
+  } else {
+    const top = vp().scrollTop; for (const p of ps) if (p.offsetTop + p.offsetHeight > top + 4) return +p.dataset.p;
+  }
+  return 0;
+}
+function chapterFrac() {
+  if (S.settings.mode === 'paged') return (R.page + 1) / R.pages;
+  const v = vp(), max = v.scrollHeight - v.clientHeight; return max > 0 ? clamp(v.scrollTop / max, 0, 1) : 1;
+}
+function pct() { const tot = R.meta.words || 1; return clamp((R.cum[R.ch] + chapterFrac() * R.cw[R.ch]) / tot, 0, 1); }
+function updateStatus() {
+  if (!R.book) return;
+  const t = R.book.chapters[R.ch].title, p = Math.round(pct() * 100);
+  const pg = S.settings.mode === 'paged' ? `Pág. ${R.page + 1} de ${R.pages} · ` : '';
+  $('#st-ch').textContent = t; $('#st-pg').textContent = pg + p + '%';
+  $('#mb-ch').textContent = `Cap. ${R.ch + 1}/${R.book.chapters.length} · ${t}`; $('#mb-pg').textContent = p + '% do livro';
+  $('#rv-ribbon').classList.toggle('on', pageBookmarks().length > 0);
+}
+function nextPage() {
+  if (S.settings.mode === 'scroll') {
+    const v = vp(); if (v.scrollTop + v.clientHeight >= v.scrollHeight - 4) { if (R.ch < R.book.chapters.length - 1) renderChapter(R.ch + 1); }
+    else v.scrollBy({ top: v.clientHeight * 0.9, behavior: 'smooth' }); return;
+  }
+  if (R.page < R.pages - 1) goPage(R.page + 1); else if (R.ch < R.book.chapters.length - 1) renderChapter(R.ch + 1); else toast('Fim do livro');
+}
+function prevPage() {
+  if (S.settings.mode === 'scroll') {
+    const v = vp(); if (v.scrollTop <= 2) { if (R.ch > 0) renderChapter(R.ch - 1, { atEnd: true }); }
+    else v.scrollBy({ top: -v.clientHeight * 0.9, behavior: 'smooth' }); return;
+  }
+  if (R.page > 0) goPage(R.page - 1); else if (R.ch > 0) renderChapter(R.ch - 1, { atEnd: true });
+}
+function saveProgress() {
+  if (!R.meta || !R.book) return;
+  S.progress[R.meta.id] = { version: R.version, ch: R.ch, para: anchorPara(), pct: pct(),
+    audio: Player.ch >= 0 ? { ch: Player.ch, idx: Player.idx, version: R.version } : null, t: Date.now() };
+  Store.setLazy('progress', S.progress);
+}
+function relayoutKeep() { if (S.ui.view !== 'reader' || !R.book) return; renderChapter(R.ch, { para: anchorPara(), keepAudio: true }); }
+
+function renderVersions() {
+  if (!R.meta) return;
+  const m = R.meta;
+  $('#rv-vers').innerHTML = `<div class="seg">` + ['orig', ...LV].map(v => {
+    const s = m.levels?.[v]; const avail = v === 'orig' || (s && s.done > 0);
+    return `<button class="${v === R.version ? 'on' : ''} ${avail ? '' : 'na'}" data-act="ver" data-v="${v}">${v === 'orig' ? 'Original' : v}${v !== 'orig' && s && s.done && s.done < s.total ? `<small>${Math.round(100 * s.done / s.total)}%</small>` : (v !== 'orig' && !(s && s.done) ? '<small>gerar</small>' : '')}</button>`;
+  }).join('') + `</div>`;
+}
+function renderGenLine() {
+  const el = $('#rv-gen'); if (!R.meta || R.version === 'orig' || !R.adapt) { el.innerHTML = ''; return; }
+  const ad = R.adapt, job = Queue.job(ad.key);
+  if (job) {
+    const qs = Queue.status(ad.key), jp = jobProgress(job, ad);
+    el.innerHTML = `<span>${qs === 'running' ? 'Adaptando' : qs === 'queued' ? 'Na fila' : 'Pausado'} ${jp.d}/${jp.t}</span><div class="bar"><i style="width:${100 * jp.d / jp.t}%"></i></div>
+      <button class="btn sm" data-act="${qs === 'paused' ? 'resume' : 'pause'}">${qs === 'paused' ? 'Retomar' : 'Pausar'}</button>`;
+    return;
+  }
+  const p = chProgress(ad, R.ch);
+  el.innerHTML = p.d < p.t ? `<span>Capítulo não adaptado</span><div class="bar"><i style="width:${100 * p.d / p.t}%"></i></div><button class="btn sm" data-act="gen-ch">Adaptar capítulo</button>` : '';
+}
+async function setVersion(v) {
+  if (v === R.version) return;
+  if (v !== 'orig') {
+    const ad = await getAdapt(R.meta.id, v);
+    if (!ad || doneCount(ad) === 0) { hideMenus(); openBookSheet(R.meta.id, v); return; }
+    R.adapt = ad;
+  } else R.adapt = null;
+  Player.stop(); Player.ch = -1;
+  const ratio = R.paras.length ? anchorPara() / R.paras.length : 0;
+  await loadGloss(R.meta.id, v, R.book.chapters.length);
+  R.version = v; renderChapter(R.ch, { paraRatio: ratio });
+  toast(v === 'orig' ? 'Texto original' : `Versão adaptada ${v}`);
+}
+function showMenus() { $('#reader').classList.add('menus'); }
+function hideMenus() { $('#reader').classList.remove('menus'); }
+function toggleMenus() { $('#reader').classList.toggle('menus'); }
+
+/* Sumário e marcadores */
+function openToc(tab) { S.ui.tocTab = tab || S.ui.tocTab || 'toc'; openSheet(tocHTML(), 'toc'); const on = $('.toc-it.on'); if (on) on.scrollIntoView({ block: 'center' }); }
+function tocHTML() {
+  const tab = S.ui.tocTab;
+  let body = '';
+  if (tab === 'toc') {
+    body = R.book.chapters.map((c, i) => {
+      let st = Math.round(100 * R.cum[i] / (R.meta.words || 1)) + '%';
+      if (R.adapt) { const p = chProgress(R.adapt, i); st = (p.d === p.t ? '✓ ' : p.d ? '◐ ' : '○ ') + st; }
+      return `<button class="toc-it ${i === R.ch ? 'on' : ''}" data-act="goto-ch" data-i="${i}"><span>${esc(c.title)}</span><small>${st}</small></button>`;
+    }).join('');
+  } else {
+    const list = S.bookmarks[R.meta.id] || [];
+    body = list.length ? list.map(b => `<div class="bm-it"><button data-act="goto-bm" data-id="${b.id}"><b>${esc(R.book.chapters[b.ch]?.title || '')}</b> <span class="muted sm">· ${b.version === 'orig' ? 'Original' : b.version}</span><span class="sn">${esc(b.snip)}…</span></button>
+      <button class="icon-btn" data-act="bm-del" data-id="${b.id}" aria-label="Remover">${ic('trash')}</button></div>`).join('')
+      : '<p class="empty">Nenhum marcador. Use o ícone 🔖 no menu superior.</p>';
+  }
+  return `<h3>${esc(R.meta.title)}</h3><div class="seg" style="margin:10px 0 6px"><button class="${tab === 'toc' ? 'on' : ''}" data-act="toc-tab" data-t="toc">Sumário</button><button class="${tab === 'bm' ? 'on' : ''}" data-act="toc-tab" data-t="bm">Marcadores</button></div>${body}`;
+}
+function paraOnPage(pi) {
+  if (S.settings.mode !== 'paged') return pi === anchorPara();
+  const el = ct().querySelector(`[data-p="${pi}"]`); return !!el && pageOf(el) === R.page;
+}
+function pageBookmarks() { if (!R.meta) return []; return (S.bookmarks[R.meta.id] || []).filter(b => b.version === R.version && b.ch === R.ch && paraOnPage(b.para)); }
+function toggleBookmark() {
+  const id = R.meta.id, list = S.bookmarks[id] = S.bookmarks[id] || [], here = pageBookmarks();
+  if (here.length) { S.bookmarks[id] = list.filter(b => !here.includes(b)); toast('Marcador removido'); }
+  else { const p = anchorPara(); list.unshift({ id: uid(), version: R.version, ch: R.ch, para: p, snip: (R.paras[p]?.t || '').slice(0, 90), t: Date.now() }); toast('Página marcada'); }
+  Store.setLazy('bookmarks', S.bookmarks); updateStatus();
+}
+async function gotoBookmark(bid) {
+  const b = (S.bookmarks[R.meta.id] || []).find(x => x.id === bid); if (!b) return;
+  closeSheet(); hideMenus();
+  if (b.version !== R.version) { const ad = b.version === 'orig' ? null : await getAdapt(R.meta.id, b.version); if (b.version !== 'orig' && !ad) return toast('Versão não disponível'); Player.stop(); R.version = b.version; R.adapt = ad; await loadGloss(R.meta.id, b.version, R.book.chapters.length); }
+  renderChapter(b.ch, { para: b.para });
+}
+
+/* Aparência + Word Wise */
+function wwNoteHTML() {
+  if (!S.settings.ww) return 'Mostra uma dica curta acima das palavras difíceis, como o Word Wise do Kindle. Toque na dica para ver a definição completa.';
+  let est = '';
+  if (R.meta && S.ui.view === 'reader') {
+    const g = S.gloss[wwKey(R.meta.id, R.version, R.ch)] || { words: {} };
+    const n = WW.missing(g, R.paras.map(p => p.t)).length;
+    est = WW.loading.has(wwKey(R.meta.id, R.version, R.ch)) ? 'Gerando as dicas deste capítulo… ' : n ? `Este capítulo: ~${usd(WW.estimate(n))} (${n} palavras a analisar). ` : 'Dicas deste capítulo prontas (sem novo custo). ';
+  }
+  return `${est}Geradas uma vez por capítulo com ${esc(modelInfo(S.settings.glossModel).name)} e salvas no aparelho. Gasto total com dicas: ${usd(S.wwUsage.cost)}.`;
+}
+function aaHTML() {
+  const s = S.settings;
+  const seg = (k, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[k]) === String(v) ? 'on' : ''}" data-act="set" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  const demoHint = s.wwLang === 'pt' ? 'ressecado' : 'very dry';
+  return `<h3>Aparência</h3>
+    <div class="sec"><span class="lbl">Dicas de palavras (Word Wise)</span>${seg('ww', [[0, 'Desligadas'], [1, 'Ligadas']])}
+      ${s.ww ? `<div style="margin-top:10px">${seg('wwDensity', [['less', 'Menos dicas<small>C1+</small>'], ['mid', 'Médio<small>B2+</small>'], ['more', 'Mais dicas<small>B1+</small>']])}</div>
+      <div style="margin-top:8px">${seg('wwLang', [['en', 'Inglês simples'], ['pt', 'Português']])}</div>
+      <div class="ww-demo">…the lawns lay <ruby>parched<rt>${demoHint}</rt></ruby> and yellowing.</div>` : ''}
+      <p class="fine">${wwNoteHTML()}</p></div>
+    <div class="sec"><span class="lbl">Tema</span>${seg('theme', [['light', 'Claro'], ['sepia', 'Sépia'], ['dark', 'Escuro']])}</div>
+    <div class="sec"><span class="lbl">Fonte</span>${seg('font', [['serif', '<span style="font-family:var(--serif)">Serifada</span>'], ['sans', '<span style="font-family:var(--sans)">Sem serifa</span>']])}</div>
+    <div class="sec"><span class="lbl">Tamanho · <span id="sz-v">${s.size}px</span></span><div class="range-row"><span style="font-size:13px">A</span><input type="range" min="14" max="30" step="1" value="${s.size}" data-set="size"><span style="font-size:23px">A</span></div></div>
+    <div class="sec"><span class="lbl">Espaçamento entre linhas</span>${seg('lh', [[1.35, 'Compacto'], [1.6, 'Normal'], [1.9, 'Amplo']])}</div>
+    <div class="sec"><span class="lbl">Margens</span>${seg('margin', [['s', 'Estreitas'], ['m', 'Médias'], ['l', 'Largas']])}</div>
+    <div class="sec"><span class="lbl">Leitura</span>${seg('mode', [['paged', 'Páginas'], ['scroll', 'Rolagem']])}</div>`;
+}
+function applySettings(relayout = true) {
+  const s = S.settings, st = document.documentElement.style;
+  document.body.dataset.theme = s.theme;
+  const tc = $('meta[name=theme-color]'); if (tc) tc.content = getComputedStyle(document.body).getPropertyValue('--bg').trim() || '#fbfaf7';
+  st.setProperty('--rd-size', s.size + 'px'); st.setProperty('--rd-lh', s.lh); st.setProperty('--rd-font', s.font === 'serif' ? 'var(--serif)' : 'var(--sans)');
+  $$('.rate-lbl').forEach(e => e.textContent = (+s.rate).toFixed(2).replace(/0$/, '') + '×');
+  if (relayout) relayoutKeep();
+}
+
+/* Toques: bordas viram página, centro abre menu, palavra (ou dica) abre dicionário */
+function wordAt(x, y) {
+  let node, off;
+  if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (!p) return null; node = p.offsetNode; off = p.offset; }
+  else if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); if (!r) return null; node = r.startContainer; off = r.startOffset; }
+  if (!node || !ct().contains(node)) return null;
+  const el = node.nodeType === 3 ? node.parentElement : node;
+  const rb = el?.closest('ruby');
+  if (rb && (el.closest('rt') || node.nodeType !== 3)) {           // tocou na dica: abre a palavra de baixo
+    const base = rb.firstChild; if (!base || base.nodeType !== 3) return null;
+    const range = document.createRange(); range.selectNodeContents(base);
+    return { word: base.data.trim(), range, sentEl: rb.closest('.s') };
+  }
+  if (node.nodeType !== 3) return null;
+  const t = node.data, isW = c => !!c && /[A-Za-zÀ-ÿ'’-]/.test(c);
+  let s = off, e = off;
+  while (s > 0 && isW(t[s - 1])) s--; while (e < t.length && isW(t[e])) e++;
+  while (s < e && /['’-]/.test(t[s])) s++; while (e > s && /['’-]/.test(t[e - 1])) e--;
+  if (e - s < 1) return null;
+  const range = document.createRange(); range.setStart(node, s); range.setEnd(node, e);
+  if (![...range.getClientRects()].some(r => x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 4 && y <= r.bottom + 4)) return null;
+  return { word: t.slice(s, e), range, sentEl: node.parentElement.closest('.s') };
+}
+function bindReaderInput() {
+  const v = vp(); let tx = null, ty = 0, swiped = false;
+  v.addEventListener('touchstart', e => { const t = e.touches[0]; tx = t.clientX; ty = t.clientY; swiped = false; }, { passive: true });
+  v.addEventListener('touchend', e => {
+    if (tx == null || S.settings.mode !== 'paged') return;
+    const t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty; tx = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { swiped = true; hideMenus(); dx < 0 ? nextPage() : prevPage(); }
+  });
+  v.addEventListener('click', e => {
+    if (swiped) { swiped = false; return; }
+    if (e.target.closest('[data-act]')) return;
+    if (String(window.getSelection())) return;
+    if ($('#reader').classList.contains('menus')) { hideMenus(); return; }
+    const r = v.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    if (x < 0.25) return prevPage();
+    if (x > 0.75) return nextPage();
+    if (y < 0.14 || y > 0.9) return toggleMenus(); // faixas superior/inferior do centro: sempre menu
+    const w = wordAt(e.clientX, e.clientY);
+    if (w) return showWord(w);
+    toggleMenus();
+  });
+  v.addEventListener('scroll', debounce(() => { if (S.settings.mode === 'scroll') { updateStatus(); saveProgress(); } }, 150), { passive: true });
+}
+
+/* =====================================================================
+   Dicionário e vocabulário
+   ===================================================================== */
+const DICT_SYS = `You are a bilingual learner's dictionary (English → Brazilian Portuguese) for learners of English.
+Given a word and the sentence where it appears, explain the meaning used in THAT sentence.
+Reply ONLY with one JSON object, no markdown:
+{"lemma":"base form","pos":"noun|verb|adjective|adverb|...","definition":"simple English definition, max 15 words, A2 vocabulary","pt":"Brazilian Portuguese translation for this context, 1–4 words","example":"a new short, simple example sentence"}`;
+async function lookup(word, ctx) {
+  const k = word.toLowerCase() + '|' + ctx; if (S.dict[k]) return S.dict[k];
+  let info;
+  try {
+    if (API.needsKey()) throw new Error('sem chave');
+    const r = await API.withRetry(() => API.call({ system: DICT_SYS, max_tokens: 300, model: S.settings.glossModel, messages: [{ role: 'user', content: `Word: "${word}"\nSentence: "${ctx}"` }] }), { tries: 2 });
+    const m = r.text.match(/\{[\s\S]*\}/); if (!m) throw new Error('resposta inválida');
+    info = { ...JSON.parse(m[0]), src: 'ai' };
+  } catch (e) { // reserva: dicionário público (só inglês)
+    const res = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word.toLowerCase())).catch(() => null);
+    if (!res || !res.ok) throw e;
+    const d = await res.json(), mm = d[0]?.meanings?.[0], df = mm?.definitions?.[0];
+    info = { lemma: d[0]?.word || word, pos: mm?.partOfSpeech || '', definition: df?.definition || '', pt: '', example: df?.example || '', src: 'dict' };
+  }
+  return S.dict[k] = info;
+}
+function saveVocab(word, info, ctx) {
+  const key = (info.lemma || word).toLowerCase();
+  let v = S.vocab.find(x => x.key === key);
+  if (!v) { v = { id: uid(), key, added: Date.now() }; S.vocab.unshift(v); }
+  Object.assign(v, { word, lemma: info.lemma || word, pos: info.pos || '', definition: info.definition || '', pt: info.pt || '', example: info.example || '', ctx, book: R.meta?.title || '' });
+  Store.setLazy('vocab', S.vocab, 300); return v;
+}
+function clearTap() { $$('.tapmark').forEach(e => e.remove()); }
+function markTap(range) {
+  clearTap();
+  for (const r of range.getClientRects()) { const d = document.createElement('div'); d.className = 'tapmark'; Object.assign(d.style, { left: r.left - 2 + 'px', top: r.top - 1 + 'px', width: r.width + 4 + 'px', height: r.height + 2 + 'px' }); document.body.appendChild(d); }
+}
+function hlCtx(ctx, word) { return esc(ctx).replace(new RegExp(`(^|[^A-Za-z])(${escRe(esc(word))})(?=[^A-Za-z]|$)`, 'i'), '$1<b>$2</b>'); }
+async function showWord(w) {
+  markTap(w.range);
+  const word = w.word, ctx = w.sentEl ? (R.sent[+w.sentEl.dataset.s]?.text || '') : '', tok = S.ui.wordTok = uid();
+  const head = `<div class="wd-head"><span class="wd-word">${esc(word)}</span><button class="icon-btn" data-act="say" data-w="${esc(word)}" aria-label="Ouvir">${ic('vol')}</button></div>`;
+  openSheet(head + '<div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:80%"></div>', 'word', clearTap);
+  try {
+    const info = await lookup(word, ctx); if (S.ui.wordTok !== tok) return;
+    const v = saveVocab(word, info, ctx);
+    $('#sheet-body').innerHTML = `<div class="wd-head"><span class="wd-word">${esc(info.lemma || word)}</span>${info.pos ? `<span class="wd-pos">${esc(info.pos)}</span>` : ''}<button class="icon-btn" data-act="say" data-w="${esc(info.lemma || word)}" aria-label="Ouvir">${ic('vol')}</button></div>
+      <div class="wd-pt">${info.pt ? esc(info.pt) : '<span class="muted sm">Tradução indisponível (configure a chave da API em ⚙)</span>'}</div>
+      <div class="wd-def">${esc(info.definition)}</div>${info.example ? `<div class="wd-ex">“${esc(info.example)}”</div>` : ''}
+      ${ctx ? `<div class="wd-ctx">${hlCtx(ctx, word)}</div>` : ''}
+      <div class="row"><span class="muted sm">✓ Salvo no vocabulário</span><button class="link danger" style="margin:0" data-act="vdel" data-id="${v.id}" data-close="1">Remover</button></div>`;
+  } catch (e) {
+    if (S.ui.wordTok !== tok) return;
+    $('#sheet-body').innerHTML = head + `<p class="fine">Não foi possível buscar o significado: ${esc(e.message)}</p>`;
+  }
+}
+function openVocab() { S.ui.prevView = S.ui.view; closeSheet(); hideMenus(); showView('vocab'); renderVocab(); }
+function renderVocab() {
+  $('#vocab').innerHTML = `<div class="lib"><div class="lib-head"><button class="icon-btn" data-act="vocab-back" aria-label="Voltar">${ic('back')}</button><h1 style="flex:1">Vocabulário</h1><span class="muted">${S.vocab.length} palavra(s)</span></div>
+    <input type="text" id="vq" placeholder="Buscar palavra ou tradução…" value="${esc(S.ui.vq || '')}" style="margin-top:8px"><div class="vlist" id="vlist"></div></div>`;
+  $('#vq').oninput = e => { S.ui.vq = e.target.value; renderVocabList(); };
+  renderVocabList();
+}
+function renderVocabList() {
+  const q = (S.ui.vq || '').toLowerCase();
+  const list = S.vocab.filter(v => !q || [v.word, v.lemma, v.pt, v.definition].join(' ').toLowerCase().includes(q));
+  $('#vlist').innerHTML = list.length ? list.map(v => `<div class="vitem">
+      <div class="w">${esc(v.lemma)}<small>${esc(v.pos)}</small></div>
+      <div class="pt">${esc(v.pt || '—')}</div><div class="def">${esc(v.definition)}</div>
+      ${v.ctx ? `<div class="ctx">${hlCtx(v.ctx, v.word)}</div>` : ''}<div class="src">${esc(v.book)}</div>
+      <div class="acts"><button class="icon-btn" data-act="say" data-w="${esc(v.lemma)}" aria-label="Ouvir">${ic('vol')}</button><button class="icon-btn" data-act="vdel" data-id="${v.id}" aria-label="Remover">${ic('trash')}</button></div></div>`).join('')
+    : `<p class="empty">${S.vocab.length ? 'Nada encontrado.' : 'Toque numa palavra durante a leitura para ver o significado e salvá-la aqui.'}</p>`;
+}
+
+/* =====================================================================
+   Audiobook
+   Interface do motor de voz (troque por uma API de TTS implementando a mesma):
+     supported, voices(), onVoices(cb), busy(),
+     speak(text, {voiceURI, rate, onBoundary(charIndex, charLength), onEnd(), onError(e)}), stop()
+   ===================================================================== */
+class WebSpeechEngine {
+  constructor() { this.synth = window.speechSynthesis || null; this.supported = !!this.synth && typeof SpeechSynthesisUtterance !== 'undefined'; this.u = null; }
+  voices() { return (this.synth?.getVoices() || []).filter(v => /^en([-_]|$)/i.test(v.lang)); }
+  onVoices(cb) { if (!this.synth) return; this.synth.addEventListener ? this.synth.addEventListener('voiceschanged', cb) : (this.synth.onvoiceschanged = cb); cb(); }
+  busy() { return !!this.synth && (this.synth.speaking || this.synth.pending); }
+  speak(text, { voiceURI, rate = 1, onBoundary, onEnd, onError }) {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = this.voices().find(x => x.voiceURI === voiceURI);
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
+    u.rate = rate;
+    u.onboundary = e => { if (!e.name || e.name === 'word') onBoundary?.(e.charIndex, e.charLength); };
+    u.onend = () => onEnd?.();
+    u.onerror = e => { if (e.error === 'interrupted' || e.error === 'canceled') return; onError?.(e); };
+    this.u = u; // mantém referência (evita onend perdido por GC no Chrome)
+    if (this.synth.paused) this.synth.resume();
+    this.synth.speak(u);
+  }
+  stop() { this.synth?.cancel(); }
+}
+/* Exemplo de motor alternativo via API de TTS (esqueleto):
+class ApiTTSEngine {
+  supported = true;
+  voices() { return [{ voiceURI: 'en-US-voz1', name: 'Voz 1', lang: 'en-US' }]; }
+  onVoices(cb) { cb(); }
+  busy() { return !!this.audio && !this.audio.paused; }
+  async speak(text, { voiceURI, rate, onBoundary, onEnd, onError }) {
+    try {
+      const r = await fetch('/tts', { method: 'POST', body: JSON.stringify({ text, voice: voiceURI }) }); // { audioUrl, words:[{start,charIndex,charLength}] }
+      const { audioUrl, words = [] } = await r.json();
+      this.audio = new Audio(audioUrl); this.audio.playbackRate = rate;
+      this.audio.ontimeupdate = () => { const w = words.filter(x => x.start <= this.audio.currentTime).pop(); if (w) onBoundary?.(w.charIndex, w.charLength); };
+      this.audio.onended = onEnd; await this.audio.play();
+    } catch (e) { onError?.(e); }
+  }
+  stop() { this.audio?.pause(); }
+}
+// Player.setEngine(new ApiTTSEngine());
+*/
+/* Intervalo [a,b) do texto da frase, ignorando o texto das dicas (<rt>) */
+function textRange(el, a, b) {
+  const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('rt') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  const r = document.createRange(); let pos = 0, n, started = false;
+  while ((n = tw.nextNode())) {
+    const len = n.data.length;
+    if (!started && a < pos + len) { r.setStart(n, a - pos); started = true; }
+    if (started && b <= pos + len) { r.setEnd(n, b - pos); return r; }
+    pos += len;
+  }
+  return null;
+}
+const HL_API = !!(window.CSS && CSS.highlights && typeof Highlight !== 'undefined');
+const Player = {
+  engine: null, playing: false, idx: 0, ch: -1, token: 0, boundary: false,
+  init() { this.setEngine(new WebSpeechEngine()); },
+  setEngine(e) { this.stop(); this.engine = e; e.onVoices?.(() => { this.pickDefaultVoice(); if (S.ui.sheet === 'audio') $('#sheet-body').innerHTML = audioHTML(); }); this.ui(); },
+  pickDefaultVoice() {
+    const vs = this.engine.voices(); if (!vs.length || vs.some(v => v.voiceURI === S.settings.voice)) return;
+    const pick = vs.find(v => v.lang.replace('_', '-') === 'en-US' && v.localService) || vs.find(v => v.lang.replace('_', '-') === 'en-US') || vs.find(v => /en.GB/.test(v.lang)) || vs[0];
+    S.settings.voice = pick.voiceURI;
+  },
+  visible(el) {
+    if (S.settings.mode === 'paged') { const rs = el.getClientRects(); return rs.length > 0 && pageOfRect(rs[0]) <= R.page && pageOfRect(rs[rs.length - 1]) >= R.page; }
+    const a = el.getBoundingClientRect(), b = vp().getBoundingClientRect(); return a.bottom > b.top && a.top < b.bottom;
+  },
+  firstVisible() { for (let i = 0; i < R.sent.length; i++) if (this.visible(R.sent[i].el)) return i; return 0; },
+  cur() { return (this.ch === R.ch && this.idx < R.sent.length) ? this.idx : this.firstVisible(); },
+  toggle() { this.playing ? this.pause() : this.play(); },
+  play() {
+    if (!this.engine?.supported) return toast('Este navegador não suporta leitura em voz alta.');
+    if (!R.sent.length) return;
+    this.idx = (this.ch === R.ch && R.sent[this.idx] && this.visible(R.sent[this.idx].el)) ? this.idx : this.firstVisible();
+    this.ch = R.ch; this.playing = true; this.speak(); this.ui();
+  },
+  pause() {
+    this.playing = false; this.token++; this.engine?.stop(); this.clearWord();
+    R.sent[this.idx]?.el?.classList.remove('reading'); saveProgress(); this.ui();
+    if (R.dirty) relayoutKeep();
+  },
+  stop() { if (this.playing) this.pause(); },
+  speak() {
+    const t = ++this.token, s = R.sent[this.idx]; if (!s) return;
+    $$('.s.reading', ct()).forEach(e => e.classList.remove('reading'));
+    s.el.classList.add('reading'); ensureVisible(s.el);
+    const go = () => {
+      if (t !== this.token) return;
+      this.engine.speak(s.text, { voiceURI: S.settings.voice, rate: +S.settings.rate,
+        onBoundary: (ci, len) => { if (t === this.token) this.word(ci, len); },
+        onEnd: () => { if (t === this.token) this.advance(); },
+        onError: e => { if (t === this.token) { this.pause(); toast('Erro na voz: ' + (e.error || e.message || 'desconhecido')); } } });
+    };
+    if (this.engine.busy()) { this.engine.stop(); setTimeout(go, 80); } else go();
+  },
+  advance() {
+    this.clearWord(); R.sent[this.idx]?.el?.classList.remove('reading');
+    if (this.idx < R.sent.length - 1) { this.idx++; this.speak(); saveProgress(); }
+    else this.nextChapterStart();
+  },
+  nextChapterStart() {
+    if (R.ch < R.book.chapters.length - 1) { renderChapter(R.ch + 1, { fromPlayer: true }); this.ch = R.ch; this.idx = 0; if (this.playing) this.speak(); else this.show(); }
+    else { this.pause(); toast('Fim do livro'); }
+  },
+  word(ci, len) {
+    this.boundary = true;
+    const s = R.sent[this.idx]; if (!s || ci == null || ci >= s.text.length) return;
+    if (!len) { const m = s.text.slice(ci).match(/^[\w'’-]+/); len = m ? m[0].length : 0; }
+    if (!len) return;
+    if (HL_API) {                       // destaque sem mexer no HTML (preserva as dicas e a paginação)
+      const r = textRange(s.el, ci, ci + len); if (!r) return;
+      CSS.highlights.set('tts-word', new Highlight(r));
+      ensureVisible(r.startContainer.parentElement);
+    } else {
+      s.el.innerHTML = esc(s.text.slice(0, ci)) + '<mark class="w">' + esc(s.text.slice(ci, ci + len)) + '</mark>' + esc(s.text.slice(ci + len));
+      ensureVisible(s.el.querySelector('mark.w'));
+    }
+  },
+  clearWord() {
+    if (HL_API) CSS.highlights.delete('tts-word');
+    const s = R.sent[this.idx]; if (s?.el && s.el.querySelector('mark.w')) s.el.innerHTML = s.html;
+  },
+  go(j) {
+    this.clearWord(); R.sent[this.idx]?.el?.classList.remove('reading');
+    this.idx = clamp(j, 0, R.sent.length - 1); this.ch = R.ch;
+    if (this.playing) this.speak(); else this.show();
+  },
+  show() { const s = R.sent[this.idx]; if (s) { ensureVisible(s.el); s.el.classList.add('reading'); setTimeout(() => !this.playing && s.el.classList.remove('reading'), 900); } saveProgress(); },
+  jump(d) {
+    if (!R.sent.length) return; const j = this.cur() + d;
+    if (j >= R.sent.length) return this.nextChapterStart();
+    this.go(Math.max(0, j));
+  },
+  jumpPara(d) {
+    if (!R.sent.length) return;
+    const i = this.cur(), p = R.sent[i].p;
+    if (d > 0) { let j = i; while (j < R.sent.length && R.sent[j].p === p) j++; return j >= R.sent.length ? this.nextChapterStart() : this.go(j); }
+    let f = i; while (f > 0 && R.sent[f - 1].p === p) f--;
+    if (f < i) return this.go(f);
+    if (f === 0) return this.go(0);
+    let k = f - 1; const pp = R.sent[k].p; while (k > 0 && R.sent[k - 1].p === pp) k--; this.go(k);
+  },
+  restart() { if (this.playing) this.speak(); },
+  sayWord(w) { if (!this.engine?.supported) return; if (this.playing) this.pause(); this.engine.stop(); this.engine.speak(w, { voiceURI: S.settings.voice, rate: 0.85 }); },
+  ui() {
+    $$('[data-act=play]').forEach(b => b.innerHTML = ic(this.playing ? 'pause' : 'play'));
+    $('#reader').classList.toggle('playing', this.playing);
+  },
+};
+function ensureVisible(el) {
+  if (!el) return;
+  if (S.settings.mode === 'paged') { const pg = pageOf(el); if (pg !== R.page) goPage(pg); }
+  else { const a = el.getBoundingClientRect(), b = vp().getBoundingClientRect(); if (a.top < b.top + 40 || a.bottom > b.bottom - 80) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+}
+function audioHTML() {
+  const vs = Player.engine?.voices() || [], s = S.settings;
+  return `<h3>Audiobook</h3>
+    <div class="sec"><span class="lbl">Voz em inglês</span>${vs.length ? `<select data-set="voice">${vs.map(v => `<option value="${esc(v.voiceURI)}" ${v.voiceURI === s.voice ? 'selected' : ''}>${esc(v.name)} — ${esc(v.lang)}</option>`).join('')}</select>`
+      : `<p class="fine">${Player.engine?.supported ? 'Nenhuma voz em inglês encontrada. No iPhone: Ajustes → Acessibilidade → Conteúdo Falado → Vozes → Inglês.' : 'Este navegador não suporta síntese de voz.'}</p>`}</div>
+    <div class="sec"><span class="lbl">Velocidade · <span id="rate-v">${(+s.rate).toFixed(2)}×</span></span>
+      <input type="range" min="0.6" max="1.25" step="0.05" value="${s.rate}" data-set="rate">
+      <div class="chips" style="margin:10px 0 0">${[0.6, 0.75, 0.9, 1, 1.25].map(r => `<button class="btn sm ${+s.rate === r ? 'on' : ''}" data-act="rate" data-v="${r}">${r}×</button>`).join('')}</div>
+      <p class="fine">Velocidades menores ajudam iniciantes a acompanhar o texto.</p></div>
+    <div class="sec"><span class="lbl">Destaque</span><p class="fine">${Player.boundary ? 'Palavra por palavra (a voz envia os limites de cada palavra).' : 'Por frase. O destaque palavra por palavra é ativado sozinho se a voz suportar o evento boundary.'}</p></div>
+    <button class="btn wide" data-act="test-voice">${ic('vol')} Testar voz</button>`;
+}
+
+/* =====================================================================
+   Navegação de telas e ações
+   ===================================================================== */
+function showView(v) { S.ui.view = v; $$('.view').forEach(e => e.classList.toggle('active', e.id === v)); if (v === 'library') renderLibrary(); }
+
+const ACT = {
+  book: a => openBookSheet(a.dataset.id),
+  'sel-level': a => { S.ui.selLevel = S.settings.level = a.dataset.l; saveSettings(); refreshBookSheet(); },
+  gen: a => { const id = S.ui.sheetBook, l = a.dataset.l; Queue.add(id, l, new Set(getSel(id, l))); },
+  'gen-ch': () => Queue.add(R.meta.id, R.version, new Set([R.ch])),
+  'ch-quick': a => {
+    const id = S.ui.sheetBook, l = S.ui.selLevel, k = id + ':' + l;
+    const set = S.ui.sel[k] = new Set(quickSel(a.dataset.q, S.books[id], S.adapt[k]));
+    $$('[data-ch]').forEach(cb => cb.checked = set.has(+cb.dataset.ch));
+    updateEstimate();
+  },
+  pause: () => Queue.pause(),
+  resume: () => Queue.resume(),
+  read: a => { closeSheet(); openReader(a.dataset.id, a.dataset.v); },
+  'del-book': a => { if (confirm('Remover este livro e as versões adaptadas? (Os créditos gastos não voltam.)')) deleteBook(a.dataset.id); },
+  'redo-warn': async a => {
+    const ad = await getAdapt(S.ui.sheetBook, a.dataset.l); const chs = new Set();
+    ad.blocks.forEach(b => { if (b.warn) { chs.add(b.ch); b.out = null; b.warn = ''; } });
+    await saveAdapt(ad); Queue.add(ad.bookId, ad.level, chs);
+  },
+  paste: openPaste,
+  'paste-ok': async () => {
+    const text = $('#p-text').value.trim(); if (wc(text) < 20) return toast('Cole um texto mais longo.');
+    try { const b = parseTxt(text, $('#p-title').value.trim() || 'Texto colado'); if ($('#p-title').value.trim()) b.title = $('#p-title').value.trim(); b.author = $('#p-author').value.trim() || b.author;
+      const m = await addBook(b); openBookSheet(m.id); } catch (e) { toast('Erro: ' + e.message); }
+  },
+  settings: () => openSettings(),
+  'save-settings': () => {
+    readSettingsForm(); closeSheet();
+    toast(API.needsKey() ? 'Salvo (sem chave da API)' : 'Configurações salvas');
+    const rb = S.ui.returnBook; S.ui.returnBook = null;
+    if (rb && S.ui.view === 'library') setTimeout(() => openBookSheet(rb), 250);
+  },
+  'test-api': () => testApi(),
+  export: () => exportBackup(),
+  vocab: openVocab,
+  'vocab-back': () => { const pv = S.ui.prevView === 'reader' && R.meta ? 'reader' : 'library'; showView(pv); if (pv === 'reader') relayoutKeep(); },
+  vdel: a => { S.vocab = S.vocab.filter(v => v.id !== a.dataset.id); Store.setLazy('vocab', S.vocab, 300); if (a.dataset.close) { closeSheet(); toast('Removida do vocabulário'); } if (S.ui.view === 'vocab') renderVocab(); },
+  say: a => Player.sayWord(a.dataset.w),
+  close: closeSheet,
+  menus: toggleMenus,
+  back: closeReader,
+  toc: () => openToc(),
+  'toc-tab': a => { S.ui.tocTab = a.dataset.t; $('#sheet-body').innerHTML = tocHTML(); },
+  'goto-ch': a => { closeSheet(); hideMenus(); renderChapter(+a.dataset.i); },
+  'goto-bm': a => gotoBookmark(a.dataset.id),
+  'bm-del': a => { S.bookmarks[R.meta.id] = (S.bookmarks[R.meta.id] || []).filter(b => b.id !== a.dataset.id); Store.setLazy('bookmarks', S.bookmarks); $('#sheet-body').innerHTML = tocHTML(); updateStatus(); },
+  bm: toggleBookmark,
+  aa: () => openSheet(aaHTML(), 'aa'),
+  'ww-toggle': () => { S.settings.ww = S.settings.ww ? 0 : 1; WW.failed.clear(); saveSettings(); relayoutKeep(); toast(S.settings.ww ? 'Dicas de palavras ligadas · ajuste em Aa' : 'Dicas de palavras desligadas'); },
+  set: a => {
+    const k = a.dataset.k, v = a.dataset.v; S.settings[k] = isNaN(+v) ? v : +v;
+    if (k === 'ww') WW.failed.clear();
+    saveSettings(); applySettings(k !== 'theme'); $('#sheet-body').innerHTML = aaHTML();
+  },
+  ver: a => setVersion(a.dataset.v),
+  'next-ch': () => renderChapter(R.ch + 1),
+  play: () => Player.toggle(),
+  sprev: () => Player.jump(-1), snext: () => Player.jump(1),
+  pprev: () => Player.jumpPara(-1), pnext: () => Player.jumpPara(1),
+  audio: () => openSheet(audioHTML(), 'audio'),
+  rate: a => { S.settings.rate = +a.dataset.v; saveSettings(); applySettings(false); $('#sheet-body').innerHTML = audioHTML(); Player.restart(); },
+  'test-voice': () => Player.sayWord('Hello! This is how I sound when I read your book.'),
+};
+
+function bindGlobal() {
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-act]'); if (!a || a.disabled) return;
+    const f = ACT[a.dataset.act]; if (f) { e.preventDefault(); f(a, e); }
+  });
+  document.addEventListener('change', e => {
+    const ci = e.target.dataset?.ch; if (ci == null || !S.ui.sheetBook) return;
+    const set = getSel(S.ui.sheetBook, S.ui.selLevel);
+    e.target.checked ? set.add(+ci) : set.delete(+ci);
+    updateEstimate();
+  });
+  const relayoutSoon = debounce(relayoutKeep, 160), restartSoon = debounce(() => Player.restart(), 350);
+  document.addEventListener('input', e => {
+    const k = e.target.dataset?.set; if (!k) return;
+    if (k === 'size') { S.settings.size = +e.target.value; $('#sz-v').textContent = S.settings.size + 'px'; applySettings(false); relayoutSoon(); }
+    if (k === 'rate') { S.settings.rate = +e.target.value; $('#rate-v').textContent = S.settings.rate.toFixed(2) + '×'; applySettings(false); restartSoon(); }
+    if (k === 'voice') { S.settings.voice = e.target.value; restartSoon(); }
+    saveSettings();
+  });
+  document.addEventListener('keydown', e => {
+    if (S.ui.view !== 'reader' || /input|textarea|select/i.test(document.activeElement?.tagName || '')) return;
+    if (e.key === 'Escape') { S.ui.sheet ? closeSheet() : toggleMenus(); return; }
+    if (S.ui.sheet) return;
+    if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && S.settings.mode === 'paged')) { e.preventDefault(); nextPage(); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); prevPage(); }
+  });
+  // iPhone: o app pode ser fechado a qualquer momento — grava tudo que estiver pendente
+  const saveNow = () => { saveProgress(); Store.flush(); };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveNow(); });
+  window.addEventListener('pagehide', saveNow);
+  window.addEventListener('resize', debounce(relayoutKeep, 200));
+  $$('[data-ic]').forEach(b => b.innerHTML = ic(b.dataset.ic));
+  $$('.mini [data-act=snext]').forEach(b => b.innerHTML = ic('snext'));
+}
+/* Ícone para a Tela de Início do iPhone */
+function setHomeIcon() {
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 180; const x = c.getContext('2d');
+    x.fillStyle = '#2f6f62'; x.fillRect(0, 0, 180, 180);
+    x.fillStyle = 'rgba(255,255,255,.18)'; x.fillRect(0, 0, 18, 180);
+    x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '600 70px Georgia, serif'; x.fillText('Gr', 96, 84);
+    x.font = '700 22px -apple-system, Helvetica, sans-serif'; x.fillText('A1–B2', 96, 140);
+    const l = document.createElement('link'); l.rel = 'apple-touch-icon'; l.href = c.toDataURL('image/png'); document.head.appendChild(l);
+  } catch (e) {}
+}
+
+/* =====================================================================
+   Livros de exemplo (domínio público)
+   ===================================================================== */
+const SAMPLES = [
+  { title: "Alice's Adventures in Wonderland", author: 'Lewis Carroll', chapters: [{ title: 'Chapter I — Down the Rabbit-Hole (trecho)', paras: [
+    "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'",
+    "So she was considering in her own mind (as well as she could, for the hot day made her feel very sleepy and stupid), whether the pleasure of making a daisy-chain would be worth the trouble of getting up and picking the daisies, when suddenly a White Rabbit with pink eyes ran close by her.",
+    "There was nothing so very remarkable in that; nor did Alice think it so very much out of the way to hear the Rabbit say to itself, 'Oh dear! Oh dear! I shall be late!' (when she thought it over afterwards, it occurred to her that she ought to have wondered at this, but at the time it all seemed quite natural); but when the Rabbit actually took a watch out of its waistcoat-pocket, and looked at it, and then hurried on, Alice started to her feet, for it flashed across her mind that she had never before seen a rabbit with either a waistcoat-pocket, or a watch to take out of it, and burning with curiosity, she ran across the field after it, and fortunately was just in time to see it pop down a large rabbit-hole under the hedge.",
+    "In another moment down went Alice after it, never once considering how in the world she was to get out again.",
+    "The rabbit-hole went straight on like a tunnel for some way, and then dipped suddenly down, so suddenly that Alice had not a moment to think about stopping herself before she found herself falling down a very deep well.",
+    "Either the well was very deep, or she fell very slowly, for she had plenty of time as she went down to look about her and to wonder what was going to happen next. First, she tried to look down and make out what she was coming to, but it was too dark to see anything; then she looked at the sides of the well, and noticed that they were filled with cupboards and book-shelves; here and there she saw maps and pictures hung upon pegs. She took down a jar from one of the shelves as she passed; it was labelled 'ORANGE MARMALADE', but to her great disappointment it was empty: she did not like to drop the jar for fear of killing somebody underneath, so managed to put it into one of the cupboards as she fell past it.",
+    "'Well!' thought Alice to herself, 'after such a fall as this, I shall think nothing of tumbling down stairs! How brave they'll all think me at home! Why, I wouldn't say anything about it, even if I fell off the top of the house!' (Which was very likely true.)",
+    "Down, down, down. Would the fall never come to an end? 'I wonder how many miles I've fallen by this time?' she said aloud. 'I must be getting somewhere near the centre of the earth. Let me see: that would be four thousand miles down, I think—' (for, you see, Alice had learnt several things of this sort in her lessons in the schoolroom, and though this was not a very good opportunity for showing off her knowledge, as there was no one to listen to her, still it was good practice to say it over) '—yes, that's about the right distance—but then I wonder what Latitude or Longitude I've got to?' (Alice had no idea what Latitude was, or Longitude either, but thought they were nice grand words to say.)",
+  ] }] },
+  { title: "Aesop's Fables (selection)", author: 'Aesop', chapters: [
+    { title: 'The Fox and the Grapes', paras: ["A famished Fox saw some clusters of ripe black grapes hanging from a trellised vine. She resorted to all her tricks to get at them, but wearied herself in vain, for she could not reach them. At last she turned away, hiding her disappointment and saying: \"The Grapes are sour, and not ripe as I thought.\""] },
+    { title: 'The Hare and the Tortoise', paras: [
+      "A Hare one day ridiculed the short feet and slow pace of the Tortoise, who replied, laughing: \"Though you be swift as the wind, I will beat you in a race.\" The Hare, believing her assertion to be simply impossible, assented to the proposal; and they agreed that the Fox should choose the course and fix the goal. On the day appointed for the race the two started together. The Tortoise never for a moment stopped, but went on with a slow but steady pace straight to the end of the course. The Hare, lying down by the wayside, fell fast asleep. At last waking up, and moving as fast as he could, he saw the Tortoise had reached the goal, and was comfortably dozing after her fatigue.",
+      "Slow but steady wins the race."] },
+    { title: "The Shepherd's Boy and the Wolf", paras: [
+      "A Shepherd-boy, who watched a flock of sheep near a village, brought out the villagers three or four times by crying out, \"Wolf! Wolf!\" and when his neighbors came to help him, laughed at them for their pains. The Wolf, however, did truly come at last. The Shepherd-boy, now really alarmed, shouted in an agony of terror: \"Pray, do come and help me; the Wolf is killing the sheep\"; but no one paid any heed to his cries, nor rendered any assistance. The Wolf, having no cause of fear, at his leisure lacerated or destroyed the whole flock.",
+      "There is no believing a liar, even when he speaks the truth."] },
+    { title: 'The Ant and the Grasshopper', paras: [
+      "In a field one summer's day a Grasshopper was hopping about, chirping and singing to its heart's content. An Ant passed by, bearing along with great toil an ear of corn he was taking to the nest.",
+      "\"Why not come and chat with me,\" said the Grasshopper, \"instead of toiling and moiling in that way?\"",
+      "\"I am helping to lay up food for the winter,\" said the Ant, \"and recommend you to do the same.\"",
+      "\"Why bother about winter?\" said the Grasshopper; \"we have got plenty of food at present.\" But the Ant went on its way and continued its toil.",
+      "When the winter came the Grasshopper had no food and found itself dying of hunger, while it saw the ants distributing every day corn and grain from the stores they had collected in the summer. Then the Grasshopper knew: It is best to prepare for the days of necessity."] },
+    { title: 'The Lion and the Mouse', paras: [
+      "Once when a Lion was asleep a little Mouse began running up and down upon him; this soon wakened the Lion, who placed his huge paw upon him, and opened his big jaws to swallow him. \"Pardon, O King,\" cried the little Mouse: \"forgive me this time, I shall never forget it: who knows but what I may be able to do you a turn some of these days?\" The Lion was so tickled at the idea of the Mouse being able to help him, that he lifted up his paw and let him go. Some time after the Lion was caught in a trap, and the hunters, who desired to carry him alive to the King, tied him to a tree while they went in search of a waggon to carry him on. Just then the little Mouse happened to pass by, and seeing the sad plight in which the Lion was, went up to him and soon gnawed away the ropes that bound the King of the Beasts. \"Was I not right?\" said the little Mouse.",
+      "Little friends may prove great friends."] },
+  ] },
+];
+
+/* =====================================================================
+   Inicialização
+   ===================================================================== */
+async function init() {
+  await Store.init();
+  S.settings = { ...DEFAULTS, ...(await Store.get('settings') || {}), apiKey: '' };
+  if (S.settings.rememberKey) S.settings.apiKey = await Store.get('apikey') || '';
+  S.library = await Store.get('library') || [];
+  S.vocab = await Store.get('vocab') || [];
+  S.progress = await Store.get('progress') || {};
+  S.bookmarks = await Store.get('bookmarks') || {};
+  S.wwUsage = await Store.get('wwusage') || { cost: 0 };
+  setHomeIcon();
+  bindGlobal(); bindReaderInput(); Player.init(); applySettings(false);
+  if (!S.library.length && !(await Store.get('seeded'))) {
+    for (const b of [...SAMPLES].reverse()) await addBook(JSON.parse(JSON.stringify(b)), { sample: true, silent: true });
+    await Store.set('seeded', 1);
+  }
+  renderLibrary();
+}
+init();
+</script>
+</body>
+</html>
